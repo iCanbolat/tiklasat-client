@@ -1,10 +1,10 @@
 import {
-  Calendar,
   Home,
-  Inbox,
+  LayoutDashboard,
   NotebookTabs,
-  Search,
   Settings,
+  ShoppingBag,
+  ShoppingCart,
 } from "lucide-react";
 
 import {
@@ -13,7 +13,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -30,7 +29,7 @@ const items = [
       to: "/dashboard",
       title: "Dashboard",
     }),
-    icon: Home,
+    icon: LayoutDashboard,
   },
   {
     link: linkOptions({
@@ -38,6 +37,20 @@ const items = [
       title: "Categories",
     }),
     icon: NotebookTabs,
+  },
+  {
+    link: linkOptions({
+      to: "/dashboard/products",
+      title: "Products",
+    }),
+    icon: ShoppingBag,
+  },
+  {
+    link: linkOptions({
+      to: "/dashboard/orders",
+      title: "Orders",
+    }),
+    icon: ShoppingCart,
   },
   {
     link: linkOptions({
