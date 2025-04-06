@@ -8,9 +8,9 @@ import { BreadcrumbDemo } from "@/components/breadcrumb";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardComponent,
-  //   loader: () => ({
-  //     crumb: "Dashboard",
-  //   }),
+    loader: () => ({
+      crumb: "Dashboard",
+    }),
 });
 
 function DashboardComponent() {
@@ -23,7 +23,7 @@ function DashboardComponent() {
           <BreadcrumbDemo />
         </section>
         <hr />
-        <section className="p-3 h-[calc(100vh-4rem)] bg-red-600">
+        <section className="p-3 h-[calc(100vh-4rem)] bg-gray-100">
           <Outlet />
         </section>
       </main>

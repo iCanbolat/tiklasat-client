@@ -4,7 +4,7 @@ export interface ICategory {
   slug: string;
   imageUrl?: string;
   parentId?: string;
-  subcategories?: ICategory[];
+  subcategories: ICategory[];
 }
 
 export const categoryQueryKeys = {
