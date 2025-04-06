@@ -1,11 +1,7 @@
-import * as React from "react";
 import {
-  Link,
   Outlet,
   createFileRoute,
-  linkOptions,
 } from "@tanstack/react-router";
-import { Folders, Store } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { BreadcrumbDemo } from "@/components/breadcrumb";
@@ -27,7 +23,7 @@ function DashboardComponent() {
           <BreadcrumbDemo />
         </section>
         <hr />
-        <section className="p-3">
+        <section className="p-3 h-[calc(100vh-4rem)] bg-red-600">
           <Outlet />
         </section>
       </main>
