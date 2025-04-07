@@ -13,8 +13,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouterState } from "@tanstack/react-router";
 
 export function BreadcrumbDemo() {
+  // const breadcrumbs = useRouterState({
+  //   select: (state) => {
+  //     return state.matches
+  //       .map((match) => ({
+  //         title: match.context?.crumb,
+  //         path: match.pathname,
+  //       }))
+  //       .filter((crumb) => Boolean(crumb.title));
+  //   },
+  // });
+  // console.log("Breadcrumbs", breadcrumbs);
+
+  // return <p className="text-sm">{breadcrumbs[0].title}</p>;
   return (
     <Breadcrumb>
       <BreadcrumbList>

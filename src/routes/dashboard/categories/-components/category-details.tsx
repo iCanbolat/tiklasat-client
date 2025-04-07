@@ -1,33 +1,50 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Box, Edit, Plus, Trash } from 'lucide-react'
+import * as React from "react";
+import { Box, Edit, Plus, Trash } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { ICategory } from "../-types";
 
-export function CategoryDetails() {
+interface CategoryDetailsProps {
+  category: ICategory | null;
+}
+
+export function CategoryDetails({ category }: CategoryDetailsProps) {
   return (
     <Card className="h-full w-full">
       <Tabs defaultValue="details">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Electronics</CardTitle>
+            <CardTitle>{category?.name}</CardTitle>
             <TabsList>
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="subcategories">Subcategories</TabsTrigger>
               <TabsTrigger value="products">Products</TabsTrigger>
             </TabsList>
           </div>
-          <CardDescription>
-            View and edit category information
-          </CardDescription>
+          <CardDescription>View and edit category information</CardDescription>
         </CardHeader>
         <CardContent>
           <TabsContent value="details" className="space-y-6">
@@ -50,7 +67,10 @@ export function CategoryDetails() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="meta-title">Meta Title</Label>
-                <Input id="meta-title" defaultValue="Electronics - Shop Online" />
+                <Input
+                  id="meta-title"
+                  defaultValue="Electronics - Shop Online"
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="meta-description">Meta Description</Label>
@@ -62,7 +82,7 @@ export function CategoryDetails() {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="subcategories">
             <div className="space-y-4">
               <div className="flex justify-between">
@@ -117,11 +137,13 @@ export function CategoryDetails() {
               </Table>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="products">
             <div className="space-y-4">
               <div className="flex justify-between">
-                <h3 className="text-lg font-medium">Products in this Category</h3>
+                <h3 className="text-lg font-medium">
+                  Products in this Category
+                </h3>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Product
@@ -180,8 +202,7 @@ export function CategoryDetails() {
           <Button variant="outline">Cancel</Button>
           <Button>Save Changes</Button>
         </CardFooter>
-        </Tabs>
+      </Tabs>
     </Card>
-  )
+  );
 }
-
