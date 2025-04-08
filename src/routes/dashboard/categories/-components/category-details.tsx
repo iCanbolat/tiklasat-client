@@ -1,6 +1,3 @@
-"use client";
-
-import * as React from "react";
 import { Box, Edit, Plus, Trash } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,19 +22,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ICategory } from "../-types";
+import { useCategoryStore } from "@/lib/category-store";
 
-interface CategoryDetailsProps {
-  category: ICategory | null;
-}
+export function CategoryDetails() {
+  const { selectedCategory } = useCategoryStore();
 
-export function CategoryDetails({ category }: CategoryDetailsProps) {
+  if (!selectedCategory) {
+    return (
+      <Card className="h-full w-full flex items-center justify-center">
+        <CardContent className="text-center p-6">
+          <h3 className="text-lg font-medium mb-2">No Category Selected</h3>
+          <p className="text-muted-foreground">
+            Select a category from the tree to view and edit its details.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="h-full w-full">
       <Tabs defaultValue="details">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>{category?.name}</CardTitle>
+            <CardTitle>{selectedCategory?.name}</CardTitle>
             <TabsList>
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="subcategories">Subcategories</TabsTrigger>

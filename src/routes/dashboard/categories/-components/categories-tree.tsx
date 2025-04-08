@@ -6,17 +6,11 @@ import {
   ChevronRight,
   FolderTree,
   MoreHorizontal,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,28 +19,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import type { ICategory } from "../-types";
+import { useCategoryStore } from "@/lib/category-store";
 
 interface TreeNodeProps {
   category: ICategory;
   level: number;
-  onSelect: (category: ICategory) => void;
-  selectedId: string | null;
 }
 
-function TreeNode({ category, level, onSelect, selectedId }: TreeNodeProps) {
+function TreeNode({ category, level }: TreeNodeProps) {
+  const { selectCategory, selectedCategory } = useCategoryStore();
   const [expanded, setExpanded] = React.useState(level === 0);
   const hasChildren = category.subcategories.length > 0;
-  const isSelected = category.id === selectedId;
+  const isSelected = category.id === selectedCategory?.id;
 
-  const handleToggle = (e: React.MouseEvent) => {
+  const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
     setExpanded(!expanded);
-    console.log("Toggle expanded:", !expanded);
-  };
-
-  const handleSelect = () => {
-    onSelect(category);
+    selectCategory(category);
     console.log("Selected category:", category);
   };
 
@@ -66,7 +64,7 @@ function TreeNode({ category, level, onSelect, selectedId }: TreeNodeProps) {
               variant="ghost"
               size="icon"
               className="h-5 w-5 p-0"
-              onClick={handleToggle}
+              // onClick={handleToggle}
             >
               {expanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -123,8 +121,7 @@ function TreeNode({ category, level, onSelect, selectedId }: TreeNodeProps) {
                 key={child.id}
                 category={child}
                 level={level + 1}
-                onSelect={onSelect}
-                selectedId={selectedId}
+                // onSelect={onSelect}
               />
             ))}
           </motion.div>
@@ -140,22 +137,30 @@ export function CategoriesTree({
   categories: ICategory[];
 }) {
   const categories = React.useMemo(() => categoriesData, [categoriesData]);
-  const [selectedCategory, setSelectedCategory] =
-    React.useState<ICategory | null>(null);
+  const { openCreateModal } = useCategoryStore();
 
   return (
-    <div className="h-full">
-      <div className="p-2">
-        {categories.map((category) => (
-          <TreeNode
-            key={category.id}
-            category={category}
-            level={0}
-            onSelect={setSelectedCategory}
-            selectedId={selectedCategory?.id || null}
-          />
-        ))}
-      </div>
-    </div>
+    <Card className="h-full w-1/3">
+      <CardHeader className="flex flex-row w-full">
+        <div className="space-y-2">
+          <CardTitle>Category Hierarchy</CardTitle>
+          <CardDescription>
+            Manage your product categories and subcategories
+          </CardDescription>
+        </div>
+        <Button onClick={() => openCreateModal()} variant="outline" size="icon">
+          <Plus />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="h-full">
+          <div className="p-2">
+            {categories.map((category) => (
+              <TreeNode key={category.id} category={category} level={0} />
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
