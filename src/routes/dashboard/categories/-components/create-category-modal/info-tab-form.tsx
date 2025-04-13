@@ -1,10 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
-import { useForm, type UseFormReturn } from "react-hook-form";
-import {
-  categoryFormSchema,
-  type CategoryFormValues,
-} from "./validation-schema";
+import { type UseFormReturn } from "react-hook-form";
+import { type CategoryFormValues } from "./validation-schema";
 import {
   Select,
   SelectContent,
@@ -12,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, ChevronRight, ImageIcon } from "lucide-react";
+import { Check, ChevronRight, FolderTree, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   FormControl,
@@ -28,11 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCategories } from "../../-api/use-categories";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ICategory } from "../../-types";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   form: UseFormReturn<CategoryFormValues>;
 };
-const BasicInfoForm = ({ form }: Props) => {
+const InfoTabForm = ({ form }: Props) => {
   const { data: categories } = useSuspenseQuery(useCategories);
   console.log("categories", categories);
 
@@ -86,6 +83,10 @@ const BasicInfoForm = ({ form }: Props) => {
     );
   };
 
+  const renderedCategoryOptions = React.useMemo(() => {
+    return categories.map((category) => renderCategoryOption(category));
+  }, [categories]);
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <div className="space-y-4">
@@ -99,12 +100,6 @@ const BasicInfoForm = ({ form }: Props) => {
                 <Input
                   placeholder="e.g. Electronics, Clothing, etc."
                   {...field}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    if (!form.getValues("slug")) {
-                      generateSlug(e.target.value);
-                    }
-                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -123,9 +118,6 @@ const BasicInfoForm = ({ form }: Props) => {
                   <Input
                     placeholder="category-slug"
                     {...field}
-                    // onChange={(e) => {
-                    //   field.onChange(e);
-                    // }}
                   />
                 </FormControl>
                 <Button
@@ -133,7 +125,7 @@ const BasicInfoForm = ({ form }: Props) => {
                   size="icon"
                   type="button"
                   onClick={() => generateSlug(form.getValues("name"))}
-                  title="Generate from name"
+                  title="Generate slug"
                 >
                   <Check className="h-4 w-4" />
                 </Button>
@@ -158,9 +150,6 @@ const BasicInfoForm = ({ form }: Props) => {
                   placeholder="Describe this category..."
                   rows={4}
                   {...field}
-                  //   onChange={(e) => {
-                  //     field.onChange(e);
-                  //   }}
                 />
               </FormControl>
               <FormMessage />
@@ -182,7 +171,7 @@ const BasicInfoForm = ({ form }: Props) => {
                 }}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full ">
                     <SelectValue placeholder="None (Top Level Category)" />
                   </SelectTrigger>
                 </FormControl>
@@ -190,7 +179,7 @@ const BasicInfoForm = ({ form }: Props) => {
                   <SelectItem value="none">
                     None (Top Level Category)
                   </SelectItem>
-                  {categories.map((category) => renderCategoryOption(category))}
+                  {renderedCategoryOptions}
                 </SelectContent>
               </Select>
               <FormDescription>
@@ -200,6 +189,70 @@ const BasicInfoForm = ({ form }: Props) => {
             </FormItem>
           )}
         />
+
+        <div className="rounded-lg border p-4">
+          <h3 className="font-medium mb-3">Category Preview</h3>
+          <div className="flex items-center gap-3 rounded-md border p-3 mb-4">
+            <div className="relative h-12 w-12 overflow-hidden rounded-md bg-muted">
+              {form.watch("image") ? (
+                <img
+                  src={form.watch("image") || "/placeholder.svg"}
+                  alt="Category preview"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <FolderTree className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-medium">
+                {form.watch("name") || "New Category"}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {form.watch("parentId") ? "Subcategory" : "Top Level Category"}
+              </span>
+            </div>
+            {form.watch("isFeatured") && (
+              <Badge variant="secondary" className="ml-auto">
+                Featured
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {form.watch("parentId") && (
+              <div className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs">
+                <span>Parent:</span>
+                <span className="font-medium">
+                  {categories.find((c) => c.id === form.watch("parentId"))
+                    ?.name ||
+                    categories
+                      .flatMap((c) => c.subcategories)
+                      .find((c) => c.id === form.watch("parentId"))?.name}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs">
+              <span>Slug:</span>
+              <span className="font-medium">
+                {form.watch("slug") || "category-slug"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs">
+              <span>Status:</span>
+              <span
+                className={cn(
+                  "font-medium",
+                  form.watch("isActive") ? "text-green-600" : "text-red-600"
+                )}
+              >
+                {form.watch("isActive") ? "Active" : "Inactive"}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -267,4 +320,4 @@ const BasicInfoForm = ({ form }: Props) => {
   );
 };
 
-export default BasicInfoForm;
+export default InfoTabForm;

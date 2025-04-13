@@ -21,6 +21,7 @@ export const categoryFormSchema = z.object({
     metaDescription: z.string().max(160, { message: "Meta description must be less than 160 characters" }).optional(),
     metaKeywords: z.string().max(200, { message: "Meta keywords must be less than 200 characters" }).optional(),
     displayOrder: z.number().int(),
+    banner: z.string().nullable().optional(),
   })
   
   export type CategoryFormValues = z.infer<typeof categoryFormSchema>

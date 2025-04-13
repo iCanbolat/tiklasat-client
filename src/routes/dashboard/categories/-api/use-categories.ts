@@ -8,9 +8,9 @@ export const getCategoriesFn = async () => {
 };
 
 export const useCategories = queryOptions({
-  queryKey: [categoryQueryKeys.all],
+  queryKey: categoryQueryKeys.all,
   queryFn: getCategoriesFn,
-  staleTime: 1000 * 60 * 5, // 5 minutes
+  staleTime: 1000 * 60 * 5,
   refetchOnWindowFocus: false,
   retry: false,
 });
@@ -22,7 +22,7 @@ export const useCategories = queryOptions({
 //       const { url, method, response } = categoryEndpoints.getOne(id);
 //       return (await axiosClient.request<typeof response>({ url, method })).data;
 //     },
-//     staleTime: 1000 * 60 * 5, // 5 minutes
+//     staleTime: 1000 * 60 * 5, 
 //     refetchOnWindowFocus: false,
 //     retry: false,
 //   });
