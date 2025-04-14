@@ -2,8 +2,16 @@ export interface ICategory {
   id: string;
   name: string;
   slug: string;
-  imageUrl?: string;
-  parentId?: string;
+  parentId?: string | null;
+  imageUrl?: string | null;
+  banner?: string | null;
+  description?: string | null;
+  isActive: boolean;
+  isFeatured: boolean;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  metaKeywords?: string | null;
+  displayOrder: number;
   subcategories: ICategory[];
 }
 
@@ -41,5 +49,5 @@ export const categoryEndpoints = {
     url: `categories/${id}`,
     method: "DELETE" as const,
     response: {} as ICategory,
-  })
+  }),
 };

@@ -1,16 +1,13 @@
-import {
-  Outlet,
-  createFileRoute,
-} from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { BreadcrumbDemo } from "@/components/breadcrumb";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardComponent,
-    loader: () => ({
-      crumb: "Dashboard",
-    }),
+  loader: () => ({
+    crumb: "Dashboard",
+  }),
 });
 
 function DashboardComponent() {
@@ -23,7 +20,7 @@ function DashboardComponent() {
           <BreadcrumbDemo />
         </section>
         <hr />
-        <section className="p-3 h-[calc(100vh-4rem)] bg-gray-100">
+        <section className="p-3 h-[calc(100vh-3.3rem)] overflow-hidden bg-gray-100">
           <Outlet />
         </section>
       </main>

@@ -49,7 +49,7 @@ export function CreateCategoryModal() {
       // updateNewCategoryForm(data);
       // await createCategory();
       // router.refresh();
-      console.log("submit");
+      console.log(data);
     } catch (error) {
       console.error("Failed to create category:", error);
     }

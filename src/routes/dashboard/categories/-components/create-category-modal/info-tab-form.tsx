@@ -88,8 +88,8 @@ const InfoTabForm = ({ form }: Props) => {
   }, [categories]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div className="space-y-4">
+    <div className="grid gap-6 xl:grid-cols-2 sm:grid-cols-1 relative">
+      <div className="space-y-4 xl:order-1 lg:order-2">
         <FormField
           control={form.control}
           name="name"
@@ -115,10 +115,7 @@ const InfoTabForm = ({ form }: Props) => {
               <FormLabel>Slug</FormLabel>
               <div className="flex items-center gap-2">
                 <FormControl>
-                  <Input
-                    placeholder="category-slug"
-                    {...field}
-                  />
+                  <Input placeholder="category-slug" {...field} />
                 </FormControl>
                 <Button
                   variant="outline"
@@ -189,6 +186,68 @@ const InfoTabForm = ({ form }: Props) => {
             </FormItem>
           )}
         />
+      </div>
+
+      <div className="space-y-4 xl:order-2 lg:order-1">
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category Image</FormLabel>
+              <FormControl>
+                <div
+                  className={cn(
+                    "group relative flex aspect-[3/1.7] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-all hover:bg-muted/50",
+                    field.value
+                      ? "border-transparent"
+                      : "border-muted-foreground/25"
+                  )}
+                  onClick={triggerFileInput}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+
+                  {field.value ? (
+                    <>
+                      <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+                        <img
+                          src={field.value || ""}
+                          alt="Category preview"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Button variant="secondary">Change Image</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-full bg-muted p-4">
+                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium">
+                        Upload Category Image
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Drag & drop or click to browse
+                      </p>
+                    </>
+                  )}
+                </div>
+              </FormControl>
+              <FormDescription>
+                Recommended size: 800x800px. Max file size: 2MB.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="rounded-lg border p-4">
           <h3 className="font-medium mb-3">Category Preview</h3>
@@ -253,68 +312,6 @@ const InfoTabForm = ({ form }: Props) => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category Image</FormLabel>
-              <FormControl>
-                <div
-                  className={cn(
-                    "group relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-all hover:bg-muted/50",
-                    field.value
-                      ? "border-transparent"
-                      : "border-muted-foreground/25"
-                  )}
-                  onClick={triggerFileInput}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-
-                  {field.value ? (
-                    <>
-                      <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-                        <img
-                          src={field.value || ""}
-                          alt="Category preview"
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button variant="secondary">Change Image</Button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="rounded-full bg-muted p-4">
-                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm font-medium">
-                        Upload Category Image
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Drag & drop or click to browse
-                      </p>
-                    </>
-                  )}
-                </div>
-              </FormControl>
-              <FormDescription>
-                Recommended size: 800x800px. Max file size: 2MB.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
     </div>
   );

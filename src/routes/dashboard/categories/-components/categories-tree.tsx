@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/card";
 import type { ICategory } from "../-types";
 import { useCategoryStore } from "@/lib/category-store";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useCategories } from "../-api/use-categories";
 
 interface TreeNodeProps {
   category: ICategory;
@@ -131,17 +133,13 @@ function TreeNode({ category, level }: TreeNodeProps) {
   );
 }
 
-export function CategoriesTree({
-  categories: categoriesData,
-}: {
-  categories: ICategory[];
-}) {
-  const categories = React.useMemo(() => categoriesData, [categoriesData]);
+export function CategoriesTree() {
+  const { data: categories } = useSuspenseQuery(useCategories);
   const { openCreateModal } = useCategoryStore();
 
   return (
-    <Card className="h-full w-1/3">
-      <CardHeader className="flex flex-row w-full">
+    <Card className="h-fit w-1/3">
+      <CardHeader className="flex flex-row justify-between w-full">
         <div className="space-y-2">
           <CardTitle>Category Hierarchy</CardTitle>
           <CardDescription>

@@ -5,7 +5,7 @@ import { CategoryDetails } from "./-components/category-details";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CategoriesTree } from "./-components/categories-tree";
 import { CreateCategoryModal } from "./-components/create-category-modal";
- 
+
 export const Route = createFileRoute("/dashboard/categories/")({
   component: RouteComponent,
   beforeLoad: () => {
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/dashboard/categories/")({
   },
   loader: ({ context }) =>
     context.queryClient.ensureQueryData({
-      queryKey: [categoryQueryKeys.all],
+      queryKey: categoryQueryKeys.all,
       queryFn: getCategoriesFn,
     }),
 });
@@ -33,8 +33,8 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="flex flex-1 mt-4 gap-2">
-        <CategoriesTree categories={categories} />
+      <div className="flex mt-4 gap-2">
+        <CategoriesTree />
         <CategoryDetails />
       </div>
       <CreateCategoryModal />
