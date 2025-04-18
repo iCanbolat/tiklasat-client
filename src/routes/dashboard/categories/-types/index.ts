@@ -18,7 +18,7 @@ export interface ICategory {
 export const categoryQueryKeys = {
   all: ["categories"],
   details: () => [...categoryQueryKeys.all, "detail"],
-  detail: (id: number) => [...categoryQueryKeys.details(), id],
+  detail: (id: string) => [...categoryQueryKeys.details(), id],
   pagination: (page: number) => [...categoryQueryKeys.all, "pagination", page],
   infinite: () => [...categoryQueryKeys.all, "infinite"],
 } as const;

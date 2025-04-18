@@ -28,7 +28,7 @@ const DisplayTabForm = ({ form }: Props) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageUrl = e.target?.result as string;
-        form.setValue("image", imageUrl);
+        form.setValue("banner", imageUrl);
       };
       reader.readAsDataURL(file);
     }
@@ -49,7 +49,7 @@ const DisplayTabForm = ({ form }: Props) => {
               <FormLabel>Category Banner</FormLabel>
               <FormControl>
                 <div
-                  className="flex aspect-[3/1] w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 hover:bg-muted/50"
+                  className="relative flex h-72 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 hover:bg-muted/50"
                   onClick={triggerFileInput}
                 >
                   <input
@@ -62,11 +62,11 @@ const DisplayTabForm = ({ form }: Props) => {
 
                   {field.value ? (
                     <>
-                      <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+                      <div className="relative  w-full h-full overflow-hidden rounded-lg">
                         <img
                           src={field.value || ""}
                           alt="Category preview"
-                          className="object-cover"
+                          className="object-cover w-full h-full"
                         />
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">

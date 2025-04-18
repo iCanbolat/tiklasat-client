@@ -31,6 +31,9 @@ function RouteComponent() {
   if (!categories) return <div>No Category...</div>;
   if (error) return <div>Error: {JSON.stringify(error)}</div>;
 
+  console.log(categories);
+  
+
   return (
     <div className="flex flex-col w-full h-full">
       <div className="flex mt-4 gap-2">

@@ -2,6 +2,7 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { BreadcrumbDemo } from "@/components/breadcrumb";
+import { Toaster } from "@/components/ui/sonner"
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardComponent,
@@ -23,6 +24,7 @@ function DashboardComponent() {
         <section className="p-3 h-[calc(100vh-3.3rem)] overflow-hidden bg-gray-100">
           <Outlet />
         </section>
+        <Toaster/>
       </main>
     </SidebarProvider>
   );

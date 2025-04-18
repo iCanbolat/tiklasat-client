@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import {
   ChevronDown,
@@ -23,7 +21,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -45,8 +42,8 @@ function TreeNode({ category, level }: TreeNodeProps) {
 
   const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setExpanded(!expanded);
     selectCategory(category);
+    setExpanded(!expanded);
     console.log("Selected category:", category);
   };
 
@@ -66,7 +63,6 @@ function TreeNode({ category, level }: TreeNodeProps) {
               variant="ghost"
               size="icon"
               className="h-5 w-5 p-0"
-              // onClick={handleToggle}
             >
               {expanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -135,7 +131,7 @@ function TreeNode({ category, level }: TreeNodeProps) {
 
 export function CategoriesTree() {
   const { data: categories } = useSuspenseQuery(useCategories);
-  const { openCreateModal } = useCategoryStore();
+  const { openCreateModal } = useCategoryStore();  
 
   return (
     <Card className="h-fit w-1/3">

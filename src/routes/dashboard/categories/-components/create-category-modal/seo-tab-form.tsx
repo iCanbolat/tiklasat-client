@@ -1,4 +1,4 @@
- import type { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 import type { CategoryFormValues } from "./validation-schema";
 import {
   FormControl,
@@ -58,10 +58,6 @@ const SeoTabForm = ({ form }: SeoTabFormProps) => {
                 placeholder="Brief description for search engine results"
                 rows={3}
                 {...field}
-                // onChange={(e) => {
-                //   field.onChange(e);
-                //   onFormChange({ metaDescription: e.target.value });
-                // }}
               />
             </FormControl>
             <div className="flex justify-between text-xs">
@@ -93,10 +89,6 @@ const SeoTabForm = ({ form }: SeoTabFormProps) => {
               <Input
                 placeholder="keyword1, keyword2, keyword3"
                 {...field}
-                // onChange={(e) => {
-                //   field.onChange(e);
-                //   onFormChange({ metaKeywords: e.target.value });
-                // }}
               />
             </FormControl>
             <FormDescription>Separate keywords with commas</FormDescription>

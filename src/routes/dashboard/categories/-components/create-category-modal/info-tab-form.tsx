@@ -31,9 +31,9 @@ type Props = {
 };
 const InfoTabForm = ({ form }: Props) => {
   const { data: categories } = useSuspenseQuery(useCategories);
-  console.log("categories", categories);
-
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  console.log("parentIdInfotab", form.watch("parentId"));
 
   const generateSlug = (name: string) => {
     const slug = name
@@ -61,8 +61,6 @@ const InfoTabForm = ({ form }: Props) => {
   };
 
   const renderCategoryOption = (category: ICategory, level = 0) => {
-    console.log("renderoption", category);
-
     return (
       <React.Fragment key={category.id}>
         <SelectItem
@@ -160,13 +158,7 @@ const InfoTabForm = ({ form }: Props) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Parent Category</FormLabel>
-              <Select
-                value={field.value || "none"}
-                onValueChange={(value) => {
-                  const parentId = value === "none" ? null : value;
-                  field.onChange(parentId);
-                }}
-              >
+              <Select value={field.value ?? "none"}>
                 <FormControl>
                   <SelectTrigger className="w-full ">
                     <SelectValue placeholder="None (Top Level Category)" />
@@ -198,7 +190,7 @@ const InfoTabForm = ({ form }: Props) => {
               <FormControl>
                 <div
                   className={cn(
-                    "group relative flex aspect-[3/1.7] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-all hover:bg-muted/50",
+                    "group relative flex aspect-[2/1.2] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-all hover:bg-muted/50",
                     field.value
                       ? "border-transparent"
                       : "border-muted-foreground/25"
@@ -215,15 +207,15 @@ const InfoTabForm = ({ form }: Props) => {
 
                   {field.value ? (
                     <>
-                      <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+                      <div className="relative h-full w-full overflow-hidden rounded-lg group">
                         <img
                           src={field.value || ""}
                           alt="Category preview"
-                          className="object-cover"
+                          className="w-full h-full object-cover"
                         />
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button variant="secondary">Change Image</Button>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Button variant="secondary">Change Image</Button>
+                        </div>
                       </div>
                     </>
                   ) : (

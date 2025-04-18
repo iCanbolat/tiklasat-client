@@ -1,5 +1,4 @@
-import { Box, Edit, Plus, Trash } from "lucide-react";
-
+import { Box, Edit, Loader2, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,10 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -31,31 +27,61 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InfoTabForm from "./create-category-modal/info-tab-form";
 import { Form } from "@/components/ui/form";
+import React, { useEffect } from "react";
+import SeoTabForm from "./create-category-modal/seo-tab-form";
+import DisplayTabForm from "./create-category-modal/display-tab-form";
+import { useEditCategory } from "../-api/use-edit-category";
+import { toast } from "sonner";
+import type { z } from "zod";
 
 export function CategoryDetails() {
+  const [tab, setTab] = React.useState("details");
   const { selectedCategory } = useCategoryStore();
+  const { mutate, isPending } = useEditCategory(selectedCategory?.id! ?? "", {
+    onSuccess: () => toast.success("Category updated!"),
+    onError: () => toast.error("Error occurred!"),
+  });
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
-      name: selectedCategory?.name,
-      slug: selectedCategory?.slug,
-      description: selectedCategory?.description || "",
-      parentId: selectedCategory?.parentId,
-      isActive: selectedCategory?.isActive,
-      isFeatured: selectedCategory?.isFeatured,
-      image: selectedCategory?.imageUrl,
-      metaTitle: selectedCategory?.metaTitle || "",
-      metaDescription: selectedCategory?.metaDescription || "",
-      metaKeywords: selectedCategory?.metaKeywords || "",
-      displayOrder: selectedCategory?.displayOrder || 0,
-      banner: selectedCategory?.banner,
+      name: "",
+      slug: "",
+      description: "",
+      parentId: null,
+      isActive: false,
+      isFeatured: false,
+      image: "",
+      metaTitle: "",
+      metaDescription: "",
+      metaKeywords: "",
+      displayOrder: 0,
+      banner: "",
     },
   });
 
+  useEffect(() => {
+    if (selectedCategory) {
+      form.reset({
+        name: selectedCategory.name,
+        slug: selectedCategory.slug,
+        parentId: selectedCategory.parentId ?? "none",
+        description: selectedCategory.description ?? "",
+        isActive: selectedCategory.isActive,
+        isFeatured: selectedCategory.isFeatured,
+        image: selectedCategory.imageUrl,
+        metaTitle: selectedCategory.metaTitle ?? "",
+        metaDescription: selectedCategory.metaDescription ?? "",
+        metaKeywords: selectedCategory.metaKeywords ?? "",
+        displayOrder: selectedCategory.displayOrder ?? 0,
+        banner: selectedCategory.banner,
+      });
+    }
+  }, [selectedCategory,form]);
+
   if (!selectedCategory) {
     return (
-      <Card className="h-full w-full flex items-center justify-center">
+      <Card className="h-[87.5vh] w-full flex items-center justify-center">
         <CardContent className="text-center p-6">
           <h3 className="text-lg font-medium mb-2">No Category Selected</h3>
           <p className="text-muted-foreground">
@@ -65,25 +91,48 @@ export function CategoryDetails() {
       </Card>
     );
   }
+
+  const isDisabled =
+    ["subcategories", "products"].some((t) => t === tab) || isPending;
+
+  function onSubmit(values: z.infer<typeof categoryFormSchema>) {
+    values.parentId === "none" ? null : values.parentId;
+    mutate(values);
+  }
+
   return (
     <Card className="h-full w-full pb-0">
-      <Tabs defaultValue="details">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{selectedCategory?.name}</CardTitle>
-            <TabsList>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="subcategories">Subcategories</TabsTrigger>
-              <TabsTrigger value="products">Products</TabsTrigger>
-            </TabsList>
-          </div>
-          <CardDescription>View and edit category information</CardDescription>
-        </CardHeader>
-        <CardContent className="xl:h-[69vh] lg:h-[60vh] overflow-auto">
-          <Form {...form}>
-            <form onSubmit={() => console.log()}>
-              <TabsContent value="details" className="space-y-6">
+      <Tabs onValueChange={setTab} value={tab}>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">
+                  {selectedCategory?.name}
+                </CardTitle>
+                <TabsList>
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="display">Display</TabsTrigger>
+                  <TabsTrigger value="seo">SEO</TabsTrigger>
+                  <TabsTrigger value="subcategories">Subcategories</TabsTrigger>
+                  <TabsTrigger value="products">Products</TabsTrigger>
+                </TabsList>
+              </div>
+              <CardDescription>
+                View and edit category information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="xl:h-[69vh] lg:h-[63vh] my-5 overflow-auto">
+              <TabsContent value="details" className="space-y-6 ">
                 <InfoTabForm form={form} />
+              </TabsContent>
+
+              <TabsContent value="display" className="space-y-6">
+                <DisplayTabForm form={form} />
+              </TabsContent>
+
+              <TabsContent value="seo" className="space-y-6">
+                <SeoTabForm form={form} />
               </TabsContent>
 
               <TabsContent value="subcategories">
@@ -202,13 +251,19 @@ export function CategoryDetails() {
                   </Table>
                 </div>
               </TabsContent>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-between mt-auto border-t p-4">
-          <Button variant="outline">Cancel</Button>
-          <Button>Save Changes</Button>
-        </CardFooter>
+            </CardContent>
+
+            <CardFooter className="flex justify-between mt-auto border-t p-4">
+              <Button disabled={isDisabled} variant="outline">
+                Cancel
+              </Button>
+              <Button disabled={isDisabled} type="submit">
+                {isPending && <Loader2 className="animate-spin" />}
+                Save Changes
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
       </Tabs>
     </Card>
   );
