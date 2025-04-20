@@ -28,6 +28,7 @@ import type { ICategory } from "../-types";
 import { useCategoryStore } from "@/lib/category-store";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCategories } from "../-api/use-categories";
+import { useNavigate, useParams } from "@tanstack/react-router";
 
 interface TreeNodeProps {
   category: ICategory;
@@ -35,14 +36,22 @@ interface TreeNodeProps {
 }
 
 function TreeNode({ category, level }: TreeNodeProps) {
-  const { selectCategory, selectedCategory } = useCategoryStore();
   const [expanded, setExpanded] = React.useState(level === 0);
+  const { categoryId } = useParams({ strict: false });
+  
   const hasChildren = category.subcategories.length > 0;
-  const isSelected = category.id === selectedCategory?.id;
+  const isSelected = category.id === categoryId;
+  
+  const navigate = useNavigate();
 
   const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    selectCategory(category);
+    navigate({
+      to: "/dashboard/categories/$categoryId",
+      params: { categoryId: category.id },
+      search: { tab: "details" },
+      reloadDocument: false,
+    });
     setExpanded(!expanded);
     console.log("Selected category:", category);
   };
@@ -59,11 +68,7 @@ function TreeNode({ category, level }: TreeNodeProps) {
       >
         <div className="flex items-center gap-2">
           {hasChildren ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 p-0"
-            >
+            <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
               {expanded ? (
                 <ChevronDown className="h-4 w-4" />
               ) : (
@@ -131,7 +136,7 @@ function TreeNode({ category, level }: TreeNodeProps) {
 
 export function CategoriesTree() {
   const { data: categories } = useSuspenseQuery(useCategories);
-  const { openCreateModal } = useCategoryStore();  
+  const { openCreateModal } = useCategoryStore();
 
   return (
     <Card className="h-fit w-1/3">

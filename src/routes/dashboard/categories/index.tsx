@@ -1,46 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { getCategoriesFn, useCategories } from "./-api/use-categories";
-import { categoryQueryKeys } from "./-types";
-import { CategoryDetails } from "./-components/category-details";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { CategoriesTree } from "./-components/categories-tree";
-import { CreateCategoryModal } from "./-components/create-category-modal";
+import { Card, CardContent } from "@/components/ui/card";
+import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard/categories/")({
   component: RouteComponent,
-  beforeLoad: () => {
-    return {
-      crumb: "Categories",
-    };
-  },
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData({
-      queryKey: categoryQueryKeys.all,
-      queryFn: getCategoriesFn,
-    }),
 });
 
 function RouteComponent() {
-  const {
-    data: categories,
-    isPending,
-    error,
-  } = useSuspenseQuery(useCategories);
-
-  if (isPending) return <div>Loading...</div>;
-  if (!categories) return <div>No Category...</div>;
-  if (error) return <div>Error: {JSON.stringify(error)}</div>;
-
-  console.log(categories);
-  
+  const { categoryId } = useParams({ strict: false });
 
   return (
-    <div className="flex flex-col w-full h-full">
-      <div className="flex mt-4 gap-2">
-        <CategoriesTree />
-        <CategoryDetails />
-      </div>
-      <CreateCategoryModal />
-    </div>
+    <>
+      {!categoryId ? (
+        <Card className="h-[87.5vh] w-full flex items-center justify-center">
+          <CardContent className="text-center p-6">
+            <h3 className="text-lg font-medium mb-2">No Category Selected</h3>
+            <p className="text-muted-foreground">
+              Select a category from the tree to view and edit its details.
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Outlet />
+    </>
   );
 }

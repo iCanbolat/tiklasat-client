@@ -15,9 +15,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as DashboardIndexImport } from './routes/dashboard/index'
+import { Route as DashboardCategoriesRouteImport } from './routes/dashboard/categories/route'
 import { Route as DashboardProductsIndexImport } from './routes/dashboard/products/index'
 import { Route as DashboardOrdersIndexImport } from './routes/dashboard/orders/index'
 import { Route as DashboardCategoriesIndexImport } from './routes/dashboard/categories/index'
+import { Route as DashboardCategoriesCategoryIdImport } from './routes/dashboard/categories/$categoryId'
 
 // Create/Update Routes
 
@@ -45,6 +47,12 @@ const DashboardIndexRoute = DashboardIndexImport.update({
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 
+const DashboardCategoriesRouteRoute = DashboardCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+
 const DashboardProductsIndexRoute = DashboardProductsIndexImport.update({
   id: '/products/',
   path: '/products/',
@@ -58,10 +66,17 @@ const DashboardOrdersIndexRoute = DashboardOrdersIndexImport.update({
 } as any)
 
 const DashboardCategoriesIndexRoute = DashboardCategoriesIndexImport.update({
-  id: '/categories/',
-  path: '/categories/',
-  getParentRoute: () => DashboardRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardCategoriesRouteRoute,
 } as any)
+
+const DashboardCategoriesCategoryIdRoute =
+  DashboardCategoriesCategoryIdImport.update({
+    id: '/$categoryId',
+    path: '/$categoryId',
+    getParentRoute: () => DashboardCategoriesRouteRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -81,6 +96,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard/categories': {
+      id: '/dashboard/categories'
+      path: '/categories'
+      fullPath: '/dashboard/categories'
+      preLoaderRoute: typeof DashboardCategoriesRouteImport
+      parentRoute: typeof DashboardRouteImport
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
@@ -95,12 +117,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard/categories/$categoryId': {
+      id: '/dashboard/categories/$categoryId'
+      path: '/$categoryId'
+      fullPath: '/dashboard/categories/$categoryId'
+      preLoaderRoute: typeof DashboardCategoriesCategoryIdImport
+      parentRoute: typeof DashboardCategoriesRouteImport
+    }
     '/dashboard/categories/': {
       id: '/dashboard/categories/'
-      path: '/categories'
-      fullPath: '/dashboard/categories'
+      path: '/'
+      fullPath: '/dashboard/categories/'
       preLoaderRoute: typeof DashboardCategoriesIndexImport
-      parentRoute: typeof DashboardRouteImport
+      parentRoute: typeof DashboardCategoriesRouteImport
     }
     '/dashboard/orders/': {
       id: '/dashboard/orders/'
@@ -121,16 +150,32 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-interface DashboardRouteRouteChildren {
-  DashboardIndexRoute: typeof DashboardIndexRoute
+interface DashboardCategoriesRouteRouteChildren {
+  DashboardCategoriesCategoryIdRoute: typeof DashboardCategoriesCategoryIdRoute
   DashboardCategoriesIndexRoute: typeof DashboardCategoriesIndexRoute
+}
+
+const DashboardCategoriesRouteRouteChildren: DashboardCategoriesRouteRouteChildren =
+  {
+    DashboardCategoriesCategoryIdRoute: DashboardCategoriesCategoryIdRoute,
+    DashboardCategoriesIndexRoute: DashboardCategoriesIndexRoute,
+  }
+
+const DashboardCategoriesRouteRouteWithChildren =
+  DashboardCategoriesRouteRoute._addFileChildren(
+    DashboardCategoriesRouteRouteChildren,
+  )
+
+interface DashboardRouteRouteChildren {
+  DashboardCategoriesRouteRoute: typeof DashboardCategoriesRouteRouteWithChildren
+  DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardCategoriesRouteRoute: DashboardCategoriesRouteRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
-  DashboardCategoriesIndexRoute: DashboardCategoriesIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardProductsIndexRoute: DashboardProductsIndexRoute,
 }
@@ -142,9 +187,11 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/dashboard/categories': typeof DashboardCategoriesRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/login': typeof LoginIndexRoute
-  '/dashboard/categories': typeof DashboardCategoriesIndexRoute
+  '/dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
+  '/dashboard/categories/': typeof DashboardCategoriesIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/products': typeof DashboardProductsIndexRoute
 }
@@ -153,6 +200,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/login': typeof LoginIndexRoute
+  '/dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/dashboard/categories': typeof DashboardCategoriesIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/products': typeof DashboardProductsIndexRoute
@@ -162,8 +210,10 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/dashboard/categories': typeof DashboardCategoriesRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/dashboard/categories/': typeof DashboardCategoriesIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/products/': typeof DashboardProductsIndexRoute
@@ -174,9 +224,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/dashboard/categories'
     | '/dashboard/'
     | '/login'
-    | '/dashboard/categories'
+    | '/dashboard/categories/$categoryId'
+    | '/dashboard/categories/'
     | '/dashboard/orders'
     | '/dashboard/products'
   fileRoutesByTo: FileRoutesByTo
@@ -184,6 +236,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
+    | '/dashboard/categories/$categoryId'
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
@@ -191,8 +244,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/dashboard/categories'
     | '/dashboard/'
     | '/login/'
+    | '/dashboard/categories/$categoryId'
     | '/dashboard/categories/'
     | '/dashboard/orders/'
     | '/dashboard/products/'
@@ -232,10 +287,18 @@ export const routeTree = rootRoute
     "/dashboard": {
       "filePath": "dashboard/route.tsx",
       "children": [
+        "/dashboard/categories",
         "/dashboard/",
-        "/dashboard/categories/",
         "/dashboard/orders/",
         "/dashboard/products/"
+      ]
+    },
+    "/dashboard/categories": {
+      "filePath": "dashboard/categories/route.tsx",
+      "parent": "/dashboard",
+      "children": [
+        "/dashboard/categories/$categoryId",
+        "/dashboard/categories/"
       ]
     },
     "/dashboard/": {
@@ -245,9 +308,13 @@ export const routeTree = rootRoute
     "/login/": {
       "filePath": "login/index.tsx"
     },
+    "/dashboard/categories/$categoryId": {
+      "filePath": "dashboard/categories/$categoryId.tsx",
+      "parent": "/dashboard/categories"
+    },
     "/dashboard/categories/": {
       "filePath": "dashboard/categories/index.tsx",
-      "parent": "/dashboard"
+      "parent": "/dashboard/categories"
     },
     "/dashboard/orders/": {
       "filePath": "dashboard/orders/index.tsx",

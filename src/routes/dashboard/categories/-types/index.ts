@@ -15,6 +15,22 @@ export interface ICategory {
   subcategories: ICategory[];
 }
 
+export interface IProduct {
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl?: string;
+  categoryId?: string;
+}
+
+export type GetCategoryResponse = {
+  category: ICategory;
+  products: IProduct[];
+  parentCategories: ICategory[];
+  subCategories: ICategory[];
+};
+
+
 export const categoryQueryKeys = {
   all: ["categories"],
   details: () => [...categoryQueryKeys.all, "detail"],
@@ -33,7 +49,7 @@ export const categoryEndpoints = {
   getOne: (id: string) => ({
     url: `categories/${id}`,
     method: "GET" as const,
-    response: {} as ICategory,
+    response: {} as GetCategoryResponse,
   }),
   create: () => ({
     url: "categories",

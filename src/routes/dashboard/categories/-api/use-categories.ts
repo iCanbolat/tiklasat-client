@@ -15,14 +15,3 @@ export const useCategories = queryOptions({
   retry: false,
 });
 
-// export const useCategory = (id: string) =>
-//   useQuery({
-//     queryKey: categoryQueryKeys.detail(id),
-//     queryFn: async () => {
-//       const { url, method, response } = categoryEndpoints.getOne(id);
-//       return (await axiosClient.request<typeof response>({ url, method })).data;
-//     },
-//     staleTime: 1000 * 60 * 5, 
-//     refetchOnWindowFocus: false,
-//     retry: false,
-//   });

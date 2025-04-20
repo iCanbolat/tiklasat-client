@@ -23,6 +23,10 @@ export const categoryFormSchema = z.object({
     displayOrder: z.number().int(),
     banner: z.string().nullable().optional(),
   })
+
+  export const tabSchema = z.object({
+    tab: z.enum(['subcategories', 'products', 'details', 'seo', 'display']).default('details'),
+  });
   
   export type CategoryFormValues = z.infer<typeof categoryFormSchema>
   
