@@ -14,12 +14,7 @@ import {
   type CategoryFormValues,
 } from "./-components/create-category-modal/validation-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -47,10 +42,7 @@ function CategoryDetailsCard() {
     resolver: zodResolver(categoryFormSchema),
   });
 
-  const { mutate, isPending } = useEditCategory(categoryId, {
-    onSuccess: () => toast.success("Category updated!"),
-    onError: () => toast.error("Error occurred!"),
-  });
+  const { mutate, isPending } = useEditCategory(categoryId);
 
   useEffect(() => {
     form.reset({

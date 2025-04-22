@@ -1,7 +1,7 @@
 import {
+  FolderTree,
   Home,
   LayoutDashboard,
-  NotebookTabs,
   Settings,
   ShoppingBag,
   ShoppingCart,
@@ -36,7 +36,7 @@ const items = [
       to: "/dashboard/categories",
       title: "Categories",
     }),
-    icon: NotebookTabs,
+    icon: FolderTree,
   },
   {
     link: linkOptions({

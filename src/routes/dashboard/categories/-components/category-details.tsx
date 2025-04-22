@@ -1,21 +1,11 @@
-import { Edit, Plus, Trash } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { type CategoryFormValues } from "./create-category-modal/validation-schema";
 
 import { type UseFormReturn } from "react-hook-form";
@@ -28,6 +18,7 @@ import CategoryProductList from "./category-product-list";
 import type { GetCategoryResponse } from "../-types";
 import { Route } from "../$categoryId";
 import { useNavigate } from "@tanstack/react-router";
+import CategorySubcategoriesTab from "./category-subcategories-tab";
 
 type CategoryDetailsProps = {
   data: GetCategoryResponse;
@@ -76,58 +67,7 @@ export function CategoryDetails({ data, form }: CategoryDetailsProps) {
           </TabsContent>
 
           <TabsContent value="subcategories">
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <h3 className="text-lg font-medium">Subcategories</h3>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Subcategory
-                </Button>
-              </div>
-              <Separator />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Products</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Computers</TableCell>
-                    <TableCell>24</TableCell>
-                    <TableCell>Active</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Smartphones</TableCell>
-                    <TableCell>18</TableCell>
-                    <TableCell>Active</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
+            <CategorySubcategoriesTab categories={data?.subCategories}/>
           </TabsContent>
 
           <TabsContent value="products">

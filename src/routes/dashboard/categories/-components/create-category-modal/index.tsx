@@ -21,9 +21,11 @@ import { useForm } from "react-hook-form";
 import SeoTabForm from "./seo-tab-form";
 import InfoTabForm from "./info-tab-form";
 import DisplayTabForm from "./display-tab-form";
+import { useParams } from "@tanstack/react-router";
 
 export function CreateCategoryModal() {
   const { isCreateModalOpen, closeCreateModal } = useCategoryStore();
+  const { categoryId } = useParams({ strict: false });
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
@@ -31,7 +33,7 @@ export function CreateCategoryModal() {
       name: "",
       slug: "",
       description: "",
-      parentId: null,
+      parentId: categoryId ?? null,
       isActive: true,
       isFeatured: false,
       image: null,

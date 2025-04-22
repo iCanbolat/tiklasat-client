@@ -30,7 +30,6 @@ export type GetCategoryResponse = {
   subCategories: ICategory[];
 };
 
-
 export const categoryQueryKeys = {
   all: ["categories"],
   details: () => [...categoryQueryKeys.all, "detail"],
@@ -61,9 +60,9 @@ export const categoryEndpoints = {
     method: "PATCH" as const,
     response: {} as ICategory,
   }),
-  delete: (id: string) => ({
-    url: `categories/${id}`,
+  delete: (id: string, deleteProducts: boolean = false) => ({
+    url: `categories/${id}?deleteProducts=${deleteProducts}`,
     method: "DELETE" as const,
-    response: {} as ICategory,
+    response: { message: "" } as { message: string },
   }),
 };
