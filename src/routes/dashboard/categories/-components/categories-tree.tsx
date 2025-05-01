@@ -27,7 +27,7 @@ import {
 import type { ICategory } from "../-types";
 import { useCategoryStore } from "@/lib/category-store";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useCategories } from "../-api/use-categories";
+import { useCategories, useCategoriesSuspense } from "../-api/use-categories";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
 interface TreeNodeProps {
@@ -135,7 +135,7 @@ function TreeNode({ category, level }: TreeNodeProps) {
 }
 
 export function CategoriesTree() {
-  const { data: categories } = useSuspenseQuery(useCategories);
+  const { data: categories } = useCategoriesSuspense();
   const { openCreateModal } = useCategoryStore();
 
   return (

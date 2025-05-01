@@ -1,3 +1,5 @@
+import type { CategoryFormValues } from "../-components/create-category-modal/validation-schema";
+
 export interface ICategory {
   id: string;
   name: string;
@@ -50,7 +52,7 @@ export const categoryEndpoints = {
     method: "GET" as const,
     response: {} as GetCategoryResponse,
   }),
-  create: () => ({
+  create: (data: CategoryFormValues) => ({
     url: "categories",
     method: "POST" as const,
     response: {} as ICategory,

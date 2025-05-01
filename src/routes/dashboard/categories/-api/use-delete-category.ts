@@ -27,7 +27,7 @@ export const deleteCategoryById = async ({
   return res.data;
 };
 
-export const useDeleteCategory = () => {
+export const useCategoryDelete = () => {
   return useMutation({
     mutationFn: deleteCategoryById,
 

@@ -21,8 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCategories } from "../../-api/use-categories";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useCategoriesSuspense } from "../../-api/use-categories";
 import type { ICategory } from "../../-types";
 import { Badge } from "@/components/ui/badge";
 
@@ -30,7 +29,7 @@ type Props = {
   form: UseFormReturn<CategoryFormValues>;
 };
 const InfoTabForm = ({ form }: Props) => {
-  const { data: categories } = useSuspenseQuery(useCategories);
+  const { data: categories } = useCategoriesSuspense();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   console.log("parentIdInfotab", form.watch("parentId"));

@@ -22,9 +22,13 @@ import SeoTabForm from "./seo-tab-form";
 import InfoTabForm from "./info-tab-form";
 import DisplayTabForm from "./display-tab-form";
 import { useParams } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useCreateCategory } from "../../-api/use-create-category";
 
 export function CreateCategoryModal() {
   const { isCreateModalOpen, closeCreateModal } = useCategoryStore();
+  const { mutate: createCategory, isPending } = useCreateCategory();
+
   const { categoryId } = useParams({ strict: false });
 
   const form = useForm<CategoryFormValues>({
@@ -45,13 +49,14 @@ export function CreateCategoryModal() {
     },
   });
 
+  useEffect(() => {
+    form.setValue("parentId", categoryId ?? null);
+  }, [categoryId]);
+
   const onSubmit = async (data: CategoryFormValues) => {
     try {
-      // Update store with final form data
-      // updateNewCategoryForm(data);
-      // await createCategory();
-      // router.refresh();
-      console.log(data);
+      createCategory(data);
+      closeCreateModal();
     } catch (error) {
       console.error("Failed to create category:", error);
     }
@@ -102,8 +107,8 @@ export function CreateCategoryModal() {
               <Button variant="outline" onClick={closeCreateModal}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...

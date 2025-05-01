@@ -36,7 +36,7 @@ function CategoryDetailsCard() {
   const { tab } = Route.useSearch();
   const { data, isLoading } = useGetCategoryById(categoryId);
 
-  console.log("category", data);
+  console.log("category", categoryId);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),

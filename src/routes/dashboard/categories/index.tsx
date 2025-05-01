@@ -11,7 +11,7 @@ function RouteComponent() {
   return (
     <>
       {!categoryId ? (
-        <Card className="h-[87.5vh] w-full flex items-center justify-center">
+        <Card className="h-[85.5vh] w-full flex items-center justify-center">
           <CardContent className="text-center p-6">
             <h3 className="text-lg font-medium mb-2">No Category Selected</h3>
             <p className="text-muted-foreground">

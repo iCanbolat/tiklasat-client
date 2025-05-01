@@ -37,6 +37,9 @@ export function CategoryDetails({ data, form }: CategoryDetailsProps) {
     });
   };
 
+  console.log('catdetail',data);
+  
+
   return (
     <>
       <Tabs onValueChange={handleTabChange} defaultValue="details" value={tab}>
@@ -53,7 +56,7 @@ export function CategoryDetails({ data, form }: CategoryDetailsProps) {
           </div>
           <CardDescription>View and edit category information</CardDescription>
         </CardHeader>
-        <CardContent className="xl:h-[65vh] lg:h-[60vh] my-5 overflow-auto">
+        <CardContent className="xl:h-[60vh] lg:h-[55vh] my-5 overflow-auto">
           <TabsContent value="details" className="space-y-6 ">
             <InfoTabForm form={form} />
           </TabsContent>
@@ -67,11 +70,11 @@ export function CategoryDetails({ data, form }: CategoryDetailsProps) {
           </TabsContent>
 
           <TabsContent value="subcategories">
-            <CategorySubcategoriesTab categories={data?.subCategories}/>
+            <CategorySubcategoriesTab categories={data?.subCategories} />
           </TabsContent>
 
           <TabsContent value="products">
-            <CategoryProductList />
+            <CategoryProductList products={data?.products} />
           </TabsContent>
         </CardContent>
       </Tabs>

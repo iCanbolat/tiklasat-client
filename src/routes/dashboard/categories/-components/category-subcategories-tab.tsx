@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Edit, Loader2, Plus, Trash } from "lucide-react";
 import type { ICategory } from "../-types";
-import { useDeleteCategory } from "../-api/use-delete-category";
+import { useCategoryDelete } from "../-api/use-delete-category";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useCategoryStore } from "@/lib/category-store";
@@ -26,7 +26,7 @@ type Props = {
 
 const CategorySubcategoriesTab = ({ categories }: Props) => {
   const [checkValue, setCheckValue] = useState(false);
-  const { mutate: deleteCategory, isPending } = useDeleteCategory();
+  const { mutate: deleteCategory, isPending } = useCategoryDelete();
   const { openCreateModal } = useCategoryStore();
 
   return (
