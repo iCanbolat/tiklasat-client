@@ -6,6 +6,7 @@ export interface ICategory {
   slug: string;
   parentId?: string | null;
   imageUrl?: string | null;
+  productsCount: number;
   banner?: string | null;
   description?: string | null;
   isActive: boolean;

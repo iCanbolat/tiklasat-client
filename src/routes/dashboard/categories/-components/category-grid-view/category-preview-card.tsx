@@ -3,9 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { FolderTree } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryActions } from "./actions";
+import type { ICategory } from "../../-types";
 
 interface CategoryPreviewCardProps {
-  category: any;
+  category: ICategory & { path: string };
 }
 
 export function CategoryPreviewCard({ category }: CategoryPreviewCardProps) {
@@ -15,15 +16,15 @@ export function CategoryPreviewCard({ category }: CategoryPreviewCardProps) {
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <div
         className={cn(
-          "relative h-32 w-full overflow-hidden",
-          category.image ? "" : "bg-gradient-to-r"
+          "relative h-40 w-full overflow-hidden",
+          category.imageUrl ? "" : "bg-gradient-to-r"
         )}
       >
-        {category.image ? (
+        {category.imageUrl ? (
           <img
-            src={category.image || "/placeholder.svg"}
+            src={category.imageUrl || "/placeholder.svg"}
             alt={category.name}
-            className="object-cover"
+            className="absolute h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -49,16 +50,14 @@ export function CategoryPreviewCard({ category }: CategoryPreviewCardProps) {
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">{category.name}</h3>
-            {category.status && (
+            {category.isActive && (
               <Badge
                 variant="outline"
                 className={
-                  category.status === "Active"
-                    ? "text-green-600"
-                    : "text-gray-500"
+                  category.isActive ? "text-green-600" : "text-gray-500"
                 }
               >
-                {category.status}
+                {category.isActive ? "Active" : "Not Active"}
               </Badge>
             )}
           </div>

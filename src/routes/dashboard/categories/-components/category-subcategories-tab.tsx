@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Edit, Loader2, Plus, Trash } from "lucide-react";
+import { Loader2, Plus, Trash } from "lucide-react";
 import type { ICategory } from "../-types";
 import { useCategoryDelete } from "../-api/use-delete-category";
 import { Checkbox } from "@/components/ui/checkbox";
