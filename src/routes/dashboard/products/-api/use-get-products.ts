@@ -11,6 +11,18 @@ export const queryFn = async (params: Partial<ProductFilterQueryParams>) => {
   return (await axiosClient.request<typeof response>({ url, method })).data;
 };
 
+export const getProductsQueryOptions = (
+  filters: Partial<ProductFilterQueryParams>
+) => {
+  return queryOptions({
+    queryKey: productQueryKeys.list(filters),
+    queryFn: () => queryFn(filters),
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+};
+
 export const useGetProducts = (filters: Partial<ProductFilterQueryParams>) => {
   return useQuery({
     queryKey: productQueryKeys.list(filters), // e.g. ['products', { categorySlug: 'shoes' }]

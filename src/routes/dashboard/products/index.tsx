@@ -38,15 +38,24 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { columns } from "./-components/columns";
-import { ChevronDown, X } from "lucide-react";
-import { useGetProducts } from "./-api/use-get-products";
+import { ChevronDown, SearchIcon, X } from "lucide-react";
+import {
+  getProductsQueryOptions,
+  useGetProducts,
+} from "./-api/use-get-products";
+import { statusOptions } from "./-types";
 
 export const Route = createFileRoute("/dashboard/products/")({
   component: ProductPage,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      getProductsQueryOptions({ page: 1, pageSize: 10 })
+    );
+  },
 });
 
 function ProductPage() {
-  const { data, isPending, error } = useGetProducts({});
+  const { data, isPending, error } = useGetProducts({ page: 1, pageSize: 10 });
 
   console.log("prods", data?.data);
 
@@ -102,15 +111,6 @@ function ProductPage() {
 
   const uniqueCategories = Array.from(categoryMap.values());
 
-  console.log("cats", uniqueCategories);
-
-  const statuses = [
-    { value: "ACTIVE", label: "Active" },
-    { value: "LOW_STOCK", label: "Low stock" },
-    { value: "ARCHIVED", label: "Archived" },
-    { value: "OUT_OF_STOCK", label: "Out of stock" },
-  ];
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -118,6 +118,7 @@ function ProductPage() {
           <div className="relative w-64">
             <Input
               placeholder="Filter products..."
+              left={<SearchIcon />}
               value={
                 (table.getColumn("productName")?.getFilterValue() as string) ??
                 ""
@@ -192,8 +193,7 @@ function ProductPage() {
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {statuses.map((status) => (
+              {statusOptions.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
                 </SelectItem>

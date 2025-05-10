@@ -7,8 +7,49 @@ export enum ProductStatusEnum {
   ARCHIVED = "ARCHIVED",
   OUT_OF_STOCK = "OUT_OF_STOCK",
 }
+type ProductStatusConfig = {
+  label: string;
+  color: string;
+  icon?: string;
+};
+
+export const ProductStatusConfigs: Record<
+  ProductStatusEnum,
+  ProductStatusConfig
+> = {
+  [ProductStatusEnum.ACTIVE]: {
+    label: "Active",
+    color: "green",
+    icon: "check-circle",
+  },
+  [ProductStatusEnum.LOW_STOCK]: {
+    label: "Low Stock",
+    color: "orange",
+    icon: "exclamation-triangle",
+  },
+  [ProductStatusEnum.ARCHIVED]: {
+    label: "Archived",
+    color: "gray",
+    icon: "archive",
+  },
+  [ProductStatusEnum.OUT_OF_STOCK]: {
+    label: "Out of Stock",
+    color: "red",
+    icon: "times-circle",
+  },
+};
+
 export type ProductStatusType = `${ProductStatusEnum}`;
 
+export const statusOptions = [
+  { value: "all", label: "All Statuses", icon: null },
+  ...Object.values(ProductStatusEnum).map((value) => ({
+    value,
+    ...ProductStatusConfigs[value],
+  })),
+];
+
+//metatitle metdesc metakeywords prop eekle
 export interface IProduct {
   id: string;
   name: string;
@@ -52,6 +93,18 @@ export type ProductServiceResponse = {
   category?: ICategory;
 };
 
+export type IRelatedProduct = Pick<IProduct, "id" | "name" | "slug" | "price">;
+
+export type ProductResponseDto = {
+  product: IProduct & {
+    attributes: IProductAttributes[];
+    images: IProductImages[];
+    category?: ICategory | {};
+  };
+  variants?: IProduct[];
+  relatedProducts?: IRelatedProduct[];
+};
+
 export const productQueryKeys = {
   all: ["products"],
   list: (filters: Partial<ProductFilterQueryParams>) => ["products", filters],
@@ -84,7 +137,7 @@ export const productEndpoints = {
   getOne: (id: string) => ({
     url: `products/${id}`,
     method: "GET" as const,
-    response: {} as IProduct,
+    response: {} as ProductResponseDto,
   }),
   create: (data: any) => ({
     url: "products",

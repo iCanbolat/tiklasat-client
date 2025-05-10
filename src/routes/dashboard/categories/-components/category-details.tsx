@@ -35,10 +35,7 @@ export function CategoryDetails({ data, form }: CategoryDetailsProps) {
       params: { categoryId: data.category.id },
       search: (prev) => ({ ...prev, tab: newTab }),
     });
-  };
-
-  console.log('catdetail',data);
-  
+  };  
 
   return (
     <>

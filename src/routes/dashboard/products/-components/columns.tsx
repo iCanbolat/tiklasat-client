@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, Edit, MoreHorizontal, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "@tanstack/react-router";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -183,7 +184,8 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const product = row.original;
+      const data = row.original;
+      const navigate = useNavigate();
 
       return (
         <DropdownMenu>
@@ -196,7 +198,12 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-            //   onClick={() => router.push(`/products/${product.id}/edit`)}
+              onClick={() =>
+                navigate({
+                  to: "/dashboard/products/$productId",
+                  params: { productId: data.product.id },
+                })
+              }
             >
               <Edit className="mr-2 h-4 w-4" />
               Edit Product
