@@ -1,3 +1,10 @@
+import {
+  ArchiveIcon,
+  CheckCircle2Icon,
+  CircleXIcon,
+  TriangleAlertIcon,
+  type LucideProps,
+} from "lucide-react";
 import type { ICategory } from "../../categories/-types";
 import qs from "qs";
 
@@ -10,7 +17,9 @@ export enum ProductStatusEnum {
 type ProductStatusConfig = {
   label: string;
   color: string;
-  icon?: string;
+  icon?: React.ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+  >;
 };
 
 export const ProductStatusConfigs: Record<
@@ -19,29 +28,29 @@ export const ProductStatusConfigs: Record<
 > = {
   [ProductStatusEnum.ACTIVE]: {
     label: "Active",
-    color: "green",
-    icon: "check-circle",
+    color: "success",
+    icon: CheckCircle2Icon,
   },
   [ProductStatusEnum.LOW_STOCK]: {
     label: "Low Stock",
-    color: "orange",
-    icon: "exclamation-triangle",
+    color: "warning",
+    icon: TriangleAlertIcon,
   },
   [ProductStatusEnum.ARCHIVED]: {
     label: "Archived",
-    color: "gray",
-    icon: "archive",
+    color: "info",
+    icon: ArchiveIcon,
   },
   [ProductStatusEnum.OUT_OF_STOCK]: {
     label: "Out of Stock",
-    color: "red",
-    icon: "times-circle",
+    color: "destructive",
+    icon: CircleXIcon,
   },
 };
 
 export type ProductStatusType = `${ProductStatusEnum}`;
 
-export const statusOptions = [
+export const productStatusOptions = [
   { value: "all", label: "All Statuses", icon: null },
   ...Object.values(ProductStatusEnum).map((value) => ({
     value,
@@ -49,12 +58,12 @@ export const statusOptions = [
   })),
 ];
 
-//metatitle metdesc metakeywords prop eekle
 export interface IProduct {
   id: string;
   name: string;
   slug: string;
   price: number;
+  cost: number;
   currency: string;
   sku: string;
   status: ProductStatusType;
@@ -64,6 +73,9 @@ export interface IProduct {
   parentId: string;
   stockQuantity: number;
   description: string;
+  metaTitle: string;
+  metaDescription: string;
+  metaKeywords: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -99,7 +111,7 @@ export type ProductResponseDto = {
   product: IProduct & {
     attributes: IProductAttributes[];
     images: IProductImages[];
-    category?: ICategory | {};
+    category?: ICategory;
   };
   variants?: IProduct[];
   relatedProducts?: IRelatedProduct[];

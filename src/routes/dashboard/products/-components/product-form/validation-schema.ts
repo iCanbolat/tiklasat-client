@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const categorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 export const productFormSchema = z.object({
   name: z
     .string()
@@ -7,6 +12,7 @@ export const productFormSchema = z.object({
   slug: z.string().min(2, { message: "Slug is required" }),
   sku: z.string().min(2, { message: "SKU is required" }),
   price: z.coerce.number().positive({ message: "Price must be positive" }),
+  cost: z.coerce.number().positive({ message: "Price must be positive" }),
   images: z
     .array(
       z.object({
@@ -15,7 +21,7 @@ export const productFormSchema = z.object({
     )
     .optional(),
   parentId: z.string().optional(),
-  category: z.string().min(1, { message: "Category is required" }),
+  category: categorySchema,
   status: z.string().min(1, { message: "Status is required" }),
   isFeatured: z.boolean().default(false).optional(),
   stock: z.coerce
@@ -36,4 +42,5 @@ export const productFormSchema = z.object({
   metaKeywords: z.string().optional(),
 });
 
+export type ProductCategoryValues = z.infer<typeof categorySchema>;
 export type ProductFormValues = z.infer<typeof productFormSchema>;

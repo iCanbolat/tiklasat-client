@@ -8,6 +8,12 @@ import {
   getProductByIdQueryOptions,
   useGetProduct,
 } from "../-api/use-get-product";
+import ProductForm from "../-components/product-form";
+import {
+  productFormSchema,
+  type ProductFormValues,
+} from "../-components/product-form/validation-schema";
+import { Form } from "@/components/ui/form";
 
 export const Route = createFileRoute("/dashboard/products/$productId/")({
   component: ProductEditComponent,
@@ -22,28 +28,27 @@ function ProductEditComponent() {
   const { productId } = Route.useParams();
   const { data, isPending } = useGetProduct(productId);
 
-  // const form = useForm<ProductFormValues>({
-  //   resolver: zodResolver(productFormSchema),
-  // });
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+    name: data?.product.name,
+      slug: data?.product.slug,
+      sku: data?.product.sku ?? "",
+      price: data?.product.price,
+      cost: data?.product.cost ?? 0,
+      category: data?.product.category,
+      parentId: data?.product.parentId,
+      description: data?.product.description,
+      status: data?.product.status,
+      isFeatured: data?.product.isFeatured,
+      images: data?.product.images ?? [],
+      metaTitle: data?.product.metaTitle,
+      metaDescription: data?.product.metaDescription,
+      metaKeywords: data?.product.metaKeywords,
+    }
+  });
 
-  // useEffect(() => {
-  //   form.reset({
-  //     name: data?.product.product.name,
-  //     slug: data?.product.product.slug,
-  //     parentId: data?.product.product.parentId,
-  //     description: data?.product.product.description,
-  //     status: data?.product.product.status,
-  //     isFeatured: data?.product.product.isFeatured,
-  //     images: data?.product.images ?? [],
-  //     metaTitle: data?.product.product.metaTitle ?? "",
-  //     metaDescription: data?.category.metaDescription ?? "",
-  //     metaKeywords: data?.category.metaKeywords ?? "",
-  //     displayOrder: data?.category.displayOrder ?? 0,
-  //     banner: data?.category.banner,
-  //   });
-  // }, [productId, data]);
-
-  if (isPending) {
+  if (isPending || !data) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="w-6 h-6 animate-spin" />
@@ -53,5 +58,15 @@ function ProductEditComponent() {
 
   console.log("Product Detail page data:", data?.product);
 
-  return <div>Hello "/dashboard/products/$productId"!</div>;
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex-1 flex-col overflow-auto p-6">
+        <Form {...form}>
+          <form>
+            <ProductForm data={data} form={form} />
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
 }

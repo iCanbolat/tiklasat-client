@@ -43,7 +43,7 @@ import {
   getProductsQueryOptions,
   useGetProducts,
 } from "./-api/use-get-products";
-import { statusOptions } from "./-types";
+import { productStatusOptions } from "./-types";
 
 export const Route = createFileRoute("/dashboard/products/")({
   component: ProductPage,
@@ -193,7 +193,7 @@ function ProductPage() {
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
             <SelectContent>
-              {statusOptions.map((status) => (
+              {productStatusOptions.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
                 </SelectItem>
