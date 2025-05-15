@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import {
   getProductByIdQueryOptions,
   useGetProduct,
@@ -31,7 +30,7 @@ function ProductEditComponent() {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-    name: data?.product.name,
+      name: data?.product.name,
       slug: data?.product.slug,
       sku: data?.product.sku ?? "",
       price: data?.product.price,
@@ -45,7 +44,7 @@ function ProductEditComponent() {
       metaTitle: data?.product.metaTitle,
       metaDescription: data?.product.metaDescription,
       metaKeywords: data?.product.metaKeywords,
-    }
+    },
   });
 
   if (isPending || !data) {
@@ -56,7 +55,7 @@ function ProductEditComponent() {
     );
   }
 
-  console.log("Product Detail page data:", data?.product);
+  // console.log("Product Detail page data:", data?.product);
 
   return (
     <div className="flex h-full flex-col">

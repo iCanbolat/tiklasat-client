@@ -5,6 +5,9 @@ import { ProductStatusConfigs, type ProductResponseDto } from "../../-types";
 import GeneralTab from "./general-tab";
 import type { UseFormReturn } from "react-hook-form";
 import type { ProductFormValues } from "./validation-schema";
+import ProductImagesTab from "./images-tab";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 type ProductFormProps = {
   data: ProductResponseDto;
@@ -43,6 +46,12 @@ const ProductForm = ({ data, form }: ProductFormProps) => {
 
       <TabsContent value="general" className="space-y-6">
         <GeneralTab form={form} />
+      </TabsContent>
+
+      <TabsContent value="images" className="space-y-6">
+        <DndProvider backend={HTML5Backend}>
+          <ProductImagesTab />
+        </DndProvider>
       </TabsContent>
     </Tabs>
   );

@@ -5,6 +5,23 @@ const categorySchema = z.object({
   name: z.string(),
 });
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+
+const imageSchema = z.object({
+  file: z
+    .instanceof(File)
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: "Image must be less than 2MB",
+    })
+    .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
+      message: "Only .jpg, .jpeg, and .png formats are supported",
+    }),
+  url: z.string().url("Invalid URL format"),
+  displayOrder: z.number().min(0),
+  cloudinaryId: z.string().optional(),
+});
+
 export const productFormSchema = z.object({
   name: z
     .string()
@@ -13,13 +30,7 @@ export const productFormSchema = z.object({
   sku: z.string().min(2, { message: "SKU is required" }),
   price: z.coerce.number().positive({ message: "Price must be positive" }),
   cost: z.coerce.number().positive({ message: "Price must be positive" }),
-  images: z
-    .array(
-      z.object({
-        url: z.string(),
-      })
-    )
-    .optional(),
+  images: z.array(imageSchema).optional(),
   parentId: z.string().optional(),
   category: categorySchema,
   status: z.string().min(1, { message: "Status is required" }),

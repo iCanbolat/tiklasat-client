@@ -82,6 +82,8 @@ export interface IProduct {
 
 export interface IProductImages {
   url: string;
+  displayOrder: number;
+  cloudinaryId: string;
 }
 
 export interface IProductAttributes {
