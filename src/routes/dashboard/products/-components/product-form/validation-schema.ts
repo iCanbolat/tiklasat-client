@@ -35,7 +35,13 @@ export const productFormSchema = z.object({
   category: categorySchema,
   status: z.string().min(1, { message: "Status is required" }),
   isFeatured: z.boolean().default(false).optional(),
-  stock: z.coerce
+  stockQuantity: z.coerce
+    .number()
+    .int({ message: "Stock must be an integer" })
+    .nonnegative({ message: "Stock cannot be negative" }),
+  manageStock: z.boolean(),
+  allowBackorders: z.boolean(),
+  stockUnderThreshold: z.coerce
     .number()
     .int({ message: "Stock must be an integer" })
     .nonnegative({ message: "Stock cannot be negative" }),

@@ -27,7 +27,7 @@ function ProductEditComponent() {
   const { productId } = Route.useParams();
   const { data, isPending } = useGetProduct(productId);
 
-  const form = useForm<ProductFormValues>({
+  const form = useForm<ProductFormValues, any, ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       name: data?.product.name,
@@ -35,11 +35,15 @@ function ProductEditComponent() {
       sku: data?.product.sku ?? "",
       price: data?.product.price,
       cost: data?.product.cost ?? 0,
+      allowBackorders: data?.product.allowBackorders ?? false,
+      manageStock: data?.product.manageStock ?? true,
+      stockQuantity: data?.product.stockQuantity,
+      stockUnderThreshold: data?.product.stockUnderThreshold ?? 10,
       category: data?.product.category,
       parentId: data?.product.parentId,
       description: data?.product.description,
       status: data?.product.status,
-      isFeatured: data?.product.isFeatured,
+      isFeatured: data?.product.isFeatured ?? false,
       images: data?.product.images ?? [],
       metaTitle: data?.product.metaTitle,
       metaDescription: data?.product.metaDescription,
@@ -55,7 +59,7 @@ function ProductEditComponent() {
     );
   }
 
-  // console.log("Product Detail page data:", data?.product);
+  console.log("Product Detail page data:", data?.product);
 
   return (
     <div className="flex h-full flex-col">

@@ -8,6 +8,7 @@ import type { ProductFormValues } from "./validation-schema";
 import ProductImagesTab from "./images-tab";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import ProductInventoryTab from "./inventory-tab";
 
 type ProductFormProps = {
   data: ProductResponseDto;
@@ -52,6 +53,10 @@ const ProductForm = ({ data, form }: ProductFormProps) => {
         <DndProvider backend={HTML5Backend}>
           <ProductImagesTab />
         </DndProvider>
+      </TabsContent>
+
+      <TabsContent value="inventory" className="space-y-6">
+        <ProductInventoryTab form={form} />
       </TabsContent>
     </Tabs>
   );

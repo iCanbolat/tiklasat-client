@@ -67,6 +67,8 @@ export interface IProduct {
   currency: string;
   sku: string;
   status: ProductStatusType;
+  manageStock: boolean;
+  allowBackorders: boolean;
   stockUnderThreshold: number;
   isFeatured: boolean;
   isVariant: boolean;
