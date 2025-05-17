@@ -31,6 +31,7 @@ export const useCreateCategory = () => {
       const optimisticCategory: ICategory = {
         ...newCategoryData,
         id: nanoid(),
+        productsCount: newCategoryData.productsCount ?? 0,
         subcategories: [],
       };
 

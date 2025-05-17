@@ -147,6 +147,23 @@ export const productEndpoints = {
       },
     };
   },
+  uploadImage: () => ({
+    url: `cloudinary/upload`,
+    method: "POST" as const,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    response: {} as {
+      url: string;
+      public_id: string;
+    },
+  }),
+
+  deleteImage: (publicId: string) => ({
+    url: `cloudinary/${publicId}`,
+    method: "DELETE" as const,
+    response: {} as { success: boolean; message: string },
+  }),
 
   getOne: (id: string) => ({
     url: `products/${id}`,

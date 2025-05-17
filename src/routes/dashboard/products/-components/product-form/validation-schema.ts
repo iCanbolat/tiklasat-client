@@ -5,7 +5,7 @@ const categorySchema = z.object({
   name: z.string(),
 });
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
 const imageSchema = z.object({
@@ -30,7 +30,7 @@ export const productFormSchema = z.object({
   sku: z.string().min(2, { message: "SKU is required" }),
   price: z.coerce.number().positive({ message: "Price must be positive" }),
   cost: z.coerce.number().positive({ message: "Price must be positive" }),
-  images: z.array(imageSchema).optional(),
+  images: z.array(imageSchema).max(10, "Maximum 10 images allowed").optional(),
   parentId: z.string().optional(),
   category: categorySchema,
   status: z.string().min(1, { message: "Status is required" }),

@@ -1,6 +1,6 @@
 import React from "react";
-import { useFormContext, type UseFormReturn } from "react-hook-form";
-import type { ProductFormValues } from "./validation-schema";
+import { useFormContext } from "react-hook-form";
+import { useDrop, useDrag } from "react-dnd";
 import {
   Card,
   CardContent,
@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload, X, GripVertical } from "lucide-react";
-import { useDrop, useDrag } from "react-dnd";
+import { Upload, X, GripVertical, Loader2, CloudUpload } from "lucide-react";
+import { useUploadImage } from "../../-api/use-upload-image";
+import { useParams } from "@tanstack/react-router";
 
-type ProductImagesTab = {};
 type ImageItem = {
   url: string;
   displayOrder: number;
@@ -21,15 +21,12 @@ type ImageItem = {
   file?: File;
 };
 
-const ProductImagesTab = (props: ProductImagesTab) => {
-  const {
-    setValue,
-    watch,
-    formState: { errors },
-  } = useFormContext();
-  const images: ImageItem[] = watch("images") || [];
+const ProductImagesTab = () => {
+  const { setValue, watch } = useFormContext();
+  const { productId } = useParams({ from: "/dashboard/products/$productId" });
+  const { mutateAsync: uploadImage, isPending: isUploading } = useUploadImage();
 
-  console.log(images);
+  const images: ImageItem[] = watch("images") || [];
 
   const addImageInputRef = React.useRef<HTMLInputElement>(null);
   const changeImageInputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
@@ -39,7 +36,6 @@ const ProductImagesTab = (props: ProductImagesTab) => {
     if (!files) return;
 
     const newFiles = Array.from(files).slice(0, 10 - images.length);
-
     const newImages = newFiles.map((file, index) => ({
       url: URL.createObjectURL(file),
       displayOrder: images.length + index,
@@ -82,12 +78,12 @@ const ProductImagesTab = (props: ProductImagesTab) => {
     setValue("images", newImages, { shouldValidate: true });
   };
 
-  const moveImage = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return;
+  const moveImage = (dragIndex: number, hoverIndex: number) => {
+    if (dragIndex === hoverIndex) return;
 
     const newImages = [...images];
-    const [movedImage] = newImages.splice(fromIndex, 1);
-    newImages.splice(toIndex, 0, movedImage);
+    const [movedImage] = newImages.splice(dragIndex, 1);
+    newImages.splice(hoverIndex, 0, movedImage);
 
     const reorderedImages = newImages.map((img, idx) => ({
       ...img,
@@ -97,6 +93,54 @@ const ProductImagesTab = (props: ProductImagesTab) => {
     setValue("images", reorderedImages, { shouldValidate: true });
   };
 
+  const uploadToCloudinary = async () => {
+    if (images.length === 0) return;
+
+    try {
+      const imagesToUpload = images.filter(
+        (image) => !image.cloudinaryId && image.file
+      );
+
+      const uploadResults = await Promise.all(
+        imagesToUpload.map(async (image) => {
+          const result = await uploadImage({
+            file: image.file!,
+            folder: "products",
+            productId,
+            displayOrder: image.displayOrder,
+          });
+
+          URL.revokeObjectURL(image.url);
+
+          return {
+            originalIndex: images.indexOf(image),
+            data: {
+              url: result.url,
+              cloudinaryId: result.public_id,
+              displayOrder: image.displayOrder,
+            },
+          };
+        })
+      );
+
+      const updatedImages = [...images];
+      uploadResults.forEach(({ originalIndex, data }) => {
+        updatedImages[originalIndex] = {
+          ...updatedImages[originalIndex],
+          url: data.url,
+          cloudinaryId: data.cloudinaryId,
+          file: undefined,
+        };
+      });
+
+      console.log(uploadResults);
+
+      setValue("images", updatedImages, { shouldValidate: true });
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+
   const ImageThumbnail = ({
     image,
     index,
@@ -104,7 +148,7 @@ const ProductImagesTab = (props: ProductImagesTab) => {
     image: ImageItem;
     index: number;
   }) => {
-    const [{ isDragging }, drag, dragPreview] = useDrag(() => ({
+    const [{ isDragging }, drag] = useDrag(() => ({
       type: "IMAGE",
       item: { index },
       collect: (monitor) => ({
@@ -125,13 +169,11 @@ const ProductImagesTab = (props: ProductImagesTab) => {
     return (
       <div
         ref={(node) => {
-          if (node) {
-            drag(drop(node));
-          }
+          drag(drop(node));
         }}
         className={`relative aspect-square overflow-hidden rounded-lg border ${
-          isDragging ? "opacity-50" : "opacity-100"
-        }`}
+          isDragging ? "opacity-50 border-primary" : "opacity-100"
+        } transition-all duration-200`}
       >
         <img
           src={image.url}
@@ -144,7 +186,6 @@ const ProductImagesTab = (props: ProductImagesTab) => {
               variant="secondary"
               size="sm"
               type="button"
-              className="z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 changeImageInputRefs.current[index]?.click();
@@ -165,7 +206,6 @@ const ProductImagesTab = (props: ProductImagesTab) => {
               variant="destructive"
               size="sm"
               type="button"
-              className="z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRemoveImage(index);
@@ -190,33 +230,51 @@ const ProductImagesTab = (props: ProductImagesTab) => {
       <CardHeader>
         <CardTitle>Product Images</CardTitle>
         <CardDescription>
-          Manage product images and its display order. First image is thumbnail
-          of product.
+          Manage product images and their display order. First image is
+          thumbnail.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6">
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <Label>Gallery Images ({images.length}/10)</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                disabled={images.length >= 10}
-                onClick={() => addImageInputRef.current?.click()}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Add Image
-                <input
-                  type="file"
-                  ref={addImageInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  multiple
-                  onChange={handleAddImages}
-                />
-              </Button>
+              <div className="flex gap-2">
+                {images.length > 0 && (
+                  <Button
+                    type="button"
+                    onClick={uploadToCloudinary}
+                    disabled={
+                      isUploading || images.every((img) => img.cloudinaryId)
+                    }
+                  >
+                    {isUploading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CloudUpload className="mr-2 h-4 w-4" />
+                    )}
+                    {isUploading ? "Uploading..." : "Upload to Cloudinary"}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  disabled={images.length >= 10}
+                  onClick={() => addImageInputRef.current?.click()}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Add Image
+                  <input
+                    type="file"
+                    ref={addImageInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAddImages}
+                  />
+                </Button>
+              </div>
             </div>
             {images.length === 0 ? (
               <div className="flex items-center justify-center h-32 rounded-lg border border-dashed">
