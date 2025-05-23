@@ -1,6 +1,6 @@
 import React from "react";
 import { useFormContext } from "react-hook-form";
-import { useDrop, useDrag } from "react-dnd";
+import { useDrop, useDrag, DndProvider } from "react-dnd";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, X, GripVertical, Loader2, CloudUpload } from "lucide-react";
 import { useUploadImage } from "../../-api/use-upload-image";
 import { useParams } from "@tanstack/react-router";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 type ImageItem = {
   url: string;
@@ -23,7 +24,7 @@ type ImageItem = {
 
 const ProductImagesTab = () => {
   const { setValue, watch } = useFormContext();
-  const { productId } = useParams({ from: "/dashboard/products/$productId" });
+  const { productId } = useParams({ strict: false });
   const { mutateAsync: uploadImage, isPending: isUploading } = useUploadImage();
 
   const images: ImageItem[] = watch("images") || [];
@@ -94,7 +95,7 @@ const ProductImagesTab = () => {
   };
 
   const uploadToCloudinary = async () => {
-    if (images.length === 0) return;
+    if (images.length === 0 || !productId) return;
 
     try {
       const imagesToUpload = images.filter(
@@ -226,75 +227,77 @@ const ProductImagesTab = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Product Images</CardTitle>
-        <CardDescription>
-          Manage product images and their display order. First image is
-          thumbnail.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2">
-              <Label>Gallery Images ({images.length}/10)</Label>
-              <div className="flex gap-2">
-                {images.length > 0 && (
+    <DndProvider backend={HTML5Backend}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Product Images</CardTitle>
+          <CardDescription>
+            Manage product images and their display order. First image is
+            thumbnail.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <Label>Gallery Images ({images.length}/10)</Label>
+                <div className="flex gap-2">
+                  {images.length > 0 && productId &&(
+                    <Button
+                      type="button"
+                      onClick={uploadToCloudinary}
+                      disabled={
+                        isUploading || images.every((img) => img.cloudinaryId)
+                      }
+                    >
+                      {isUploading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CloudUpload className="mr-2 h-4 w-4" />
+                      )}
+                      {isUploading ? "Uploading..." : "Upload to Cloudinary"}
+                    </Button>
+                  )}
                   <Button
+                    variant="outline"
+                    size="sm"
                     type="button"
-                    onClick={uploadToCloudinary}
-                    disabled={
-                      isUploading || images.every((img) => img.cloudinaryId)
-                    }
+                    disabled={images.length >= 10}
+                    onClick={() => addImageInputRef.current?.click()}
                   >
-                    {isUploading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <CloudUpload className="mr-2 h-4 w-4" />
-                    )}
-                    {isUploading ? "Uploading..." : "Upload to Cloudinary"}
+                    <Upload className="mr-2 h-4 w-4" />
+                    Add Image
+                    <input
+                      type="file"
+                      ref={addImageInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      multiple
+                      onChange={handleAddImages}
+                    />
                   </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  disabled={images.length >= 10}
-                  onClick={() => addImageInputRef.current?.click()}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Add Image
-                  <input
-                    type="file"
-                    ref={addImageInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    multiple
-                    onChange={handleAddImages}
-                  />
-                </Button>
+                </div>
               </div>
+              {images.length === 0 ? (
+                <div className="flex items-center justify-center h-32 rounded-lg border border-dashed">
+                  <p className="text-sm text-muted-foreground">
+                    No images uploaded yet
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
+                  {images
+                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                    .map((image, index) => (
+                      <ImageThumbnail key={index} image={image} index={index} />
+                    ))}
+                </div>
+              )}
             </div>
-            {images.length === 0 ? (
-              <div className="flex items-center justify-center h-32 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">
-                  No images uploaded yet
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4">
-                {images
-                  .sort((a, b) => a.displayOrder - b.displayOrder)
-                  .map((image, index) => (
-                    <ImageThumbnail key={index} image={image} index={index} />
-                  ))}
-              </div>
-            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </DndProvider>
   );
 };
 

@@ -9,13 +9,14 @@ import ProductImagesTab from "./images-tab";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ProductInventoryTab from "./inventory-tab";
+import ProductVariantTab from "./variants-tab";
 
 type ProductFormProps = {
   data: ProductResponseDto;
   form: UseFormReturn<ProductFormValues>;
 };
 
-const ProductForm = ({ data, form }: ProductFormProps) => {
+const ProductForm = ({ data }: ProductFormProps) => {
   const [activeTab, setActiveTab] = React.useState("general");
   const Icon = ProductStatusConfigs[data.product.status].icon!;
 
@@ -46,7 +47,7 @@ const ProductForm = ({ data, form }: ProductFormProps) => {
       </div>
 
       <TabsContent value="general" className="space-y-6">
-        <GeneralTab form={form} />
+        <GeneralTab />
       </TabsContent>
 
       <TabsContent value="images" className="space-y-6">
@@ -56,7 +57,11 @@ const ProductForm = ({ data, form }: ProductFormProps) => {
       </TabsContent>
 
       <TabsContent value="inventory" className="space-y-6">
-        <ProductInventoryTab form={form} />
+        <ProductInventoryTab />
+      </TabsContent>
+
+      <TabsContent value="variants" className="space-y-6">
+        <ProductVariantTab />
       </TabsContent>
     </Tabs>
   );

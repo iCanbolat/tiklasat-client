@@ -5,12 +5,12 @@ import { CategoryPreviewCard } from "./category-preview-card";
 import { useCategoriesSuspense } from "../../-api/use-categories";
 import type { ICategory } from "../../-types";
 import { Button } from "@/components/ui/button";
-import { useCategoryStore } from "@/lib/category-store";
 import { useNavigate } from "@tanstack/react-router";
+import { useLayoutStore } from "@/lib/layout-store";
 
 export function CategoriesGridView() {
   const { data: categories } = useCategoriesSuspense();
-  const { openCreateModal } = useCategoryStore();
+  const { openCreateModal } = useLayoutStore();
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");

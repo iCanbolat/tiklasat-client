@@ -26,9 +26,9 @@ import {
 } from "@/components/ui/card";
 import type { ICategory } from "../-types";
 import { useCategoryStore } from "@/lib/category-store";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useCategories, useCategoriesSuspense } from "../-api/use-categories";
+import { useCategoriesSuspense } from "../-api/use-categories";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { useLayoutStore } from "@/lib/layout-store";
 
 interface TreeNodeProps {
   category: ICategory;
@@ -38,10 +38,10 @@ interface TreeNodeProps {
 function TreeNode({ category, level }: TreeNodeProps) {
   const [expanded, setExpanded] = React.useState(level === 0);
   const { categoryId } = useParams({ strict: false });
-  
+
   const hasChildren = category.subcategories.length > 0;
   const isSelected = category.id === categoryId;
-  
+
   const navigate = useNavigate();
 
   const handleSelect = (e: React.MouseEvent) => {
@@ -136,7 +136,7 @@ function TreeNode({ category, level }: TreeNodeProps) {
 
 export function CategoriesTree() {
   const { data: categories } = useCategoriesSuspense();
-  const { openCreateModal } = useCategoryStore();
+  const { openCreateModal } = useLayoutStore();
 
   return (
     <Card className="h-fit w-1/3">

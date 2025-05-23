@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import type { ICategory } from "../../categories/-types";
 import qs from "qs";
+import type { ProductFormValues } from "../-components/product-form/validation-schema";
 
 export enum ProductStatusEnum {
   ACTIVE = "ACTIVE",
@@ -63,32 +64,34 @@ export interface IProduct {
   name: string;
   slug: string;
   price: number;
-  cost: number;
+  cost?: number;
   currency: string;
-  sku: string;
+  sku?: string;
+  attributes: { id: string; variantType: string; value: string }[];
   status: ProductStatusType;
   manageStock: boolean;
   allowBackorders: boolean;
-  stockUnderThreshold: number;
+  stockUnderThreshold?: number;
   isFeatured: boolean;
   isVariant: boolean;
-  parentId: string;
+  parentId?: string;
   stockQuantity: number;
-  description: string;
-  metaTitle: string;
-  metaDescription: string;
-  metaKeywords: string;
-  createdAt: Date;
-  updatedAt: Date;
+  description?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface IProductImages {
   url: string;
   displayOrder: number;
-  cloudinaryId: string;
+  cloudinaryId?: string;
 }
 
 export interface IProductAttributes {
+  id: string;
   variantType: string;
   value: string;
 }
@@ -117,7 +120,7 @@ export type ProductResponseDto = {
     images: IProductImages[];
     category?: ICategory;
   };
-  variants?: IProduct[];
+  variants: IProduct[];
   relatedProducts?: IRelatedProduct[];
 };
 
@@ -172,10 +175,10 @@ export const productEndpoints = {
     method: "GET" as const,
     response: {} as ProductResponseDto,
   }),
-  create: (data: any) => ({
+  create: (data: ProductFormValues) => ({
     url: "products",
     method: "POST" as const,
-    response: {} as ICategory,
+    response: {} as ProductResponseDto,
   }),
   update: (id: string) => ({
     url: `products/${id}`,

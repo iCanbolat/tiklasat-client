@@ -23,7 +23,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -38,12 +37,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { columns } from "./-components/columns";
-import { ChevronDown, SearchIcon, X } from "lucide-react";
+import { ChevronDown, Plus, PlusCircleIcon, SearchIcon, X } from "lucide-react";
 import {
   getProductsQueryOptions,
   useGetProducts,
 } from "./-api/use-get-products";
 import { productStatusOptions } from "./-types";
+import { useLayoutStore } from "@/lib/layout-store";
+import ProductCreateModal from "./-components/product-create-modal";
 
 export const Route = createFileRoute("/dashboard/products/")({
   component: ProductPage,
@@ -56,6 +57,7 @@ export const Route = createFileRoute("/dashboard/products/")({
 
 function ProductPage() {
   const { data, isPending, error } = useGetProducts({ page: 1, pageSize: 10 });
+  const { openCreateModal } = useLayoutStore();
 
   console.log("prods", data?.data);
 
@@ -220,6 +222,11 @@ function ProductPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          <Button size={"sm"} onClick={openCreateModal}>
+            <PlusCircleIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Create Product</span>
+          </Button>
+          <ProductCreateModal />
         </div>
       </div>
 

@@ -1,9 +1,10 @@
-import type { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "./validation-schema";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -26,13 +27,82 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ProductCategorySelector } from "../category-selector";
-import { productStatusOptions } from "../../-types";
+import { productStatusOptions, type IProductAttributes } from "../../-types";
 
-type GeneralTabProps = {
-  form: UseFormReturn<ProductFormValues>;
-};
+import { Button } from "@/components/ui/button";
+import React, { useEffect } from "react";
+import { Check, Pencil, Trash2, X } from "lucide-react";
+import { AddAttributesDialog } from "../add-attributes/add-attributes-dialog";
+import { generateSKUFromAttributes } from "@/lib/utils";
 
-const GeneralTab = ({ form }: GeneralTabProps) => {
+const GeneralTab = () => {
+  const form = useFormContext<ProductFormValues>();
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+
+  const attributes = form.watch("attributes");
+  const [tempAttribute, setTempAttribute] = React.useState({
+    variantType: "",
+    value: "",
+  });
+
+  const handleAddAttribute = (newAttributes: IProductAttributes[]) => {
+    const updatedAttributes = [...attributes, ...newAttributes];
+    form.setValue("attributes", updatedAttributes);
+  };
+
+  const startEditing = (id: string) => {
+    const attributeToEdit = attributes.find((attr) => attr.id === id);
+    if (attributeToEdit) {
+      setEditingId(id);
+      setTempAttribute({
+        variantType: attributeToEdit.variantType,
+        value: attributeToEdit.value,
+      });
+    }
+  };
+
+  const saveEdit = () => {
+    if (!editingId || !tempAttribute.variantType || !tempAttribute.value)
+      return;
+
+    const updatedAttributes = attributes.map((attr) =>
+      attr.id === editingId ? { ...attr, ...tempAttribute } : attr
+    );
+
+    form.setValue("attributes", updatedAttributes);
+    setEditingId(null);
+    setTempAttribute({ variantType: "", value: "" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setTempAttribute({ variantType: "", value: "" });
+  };
+
+  const removeAttribute = (id: string) => {
+    const updatedAttributes = form
+      .getValues("attributes")
+      .filter((attr) => attr.id !== id);
+    form.setValue("attributes", updatedAttributes);
+    if (editingId === id) cancelEdit();
+  };
+
+  const generateSlug = (name: string) => {
+    const slug = name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
+    form.setValue("slug", slug);
+  };
+
+  // useEffect(() => {
+  //   if (attributes?.length > 0) {
+  //     const generatedSku = generateSKUFromAttributes(attributes);
+  //     form.setValue("sku", generatedSku, { shouldValidate: true });
+  //   }
+  // }, [attributes, form]);
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Basic Information Card */}
@@ -62,14 +132,28 @@ const GeneralTab = ({ form }: GeneralTabProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Slug</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
+                <div className="flex items-center gap-2">
+                  <FormControl>
+                    <Input placeholder="product-slug" {...field} />
+                  </FormControl>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    onClick={() => generateSlug(form.getValues("name"))}
+                    title="Generate slug"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                </div>
+                <FormDescription>
+                  This will be used in the URL: yourstore.com/products/
+                  <strong>{form.getValues("slug") || "product-slug"}</strong>
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="sku"
@@ -158,7 +242,7 @@ const GeneralTab = ({ form }: GeneralTabProps) => {
       </Card>
 
       {/* Status & Visibility Card - Full Width */}
-      <Card className="md:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Status & Visibility</CardTitle>
           <CardDescription>
@@ -236,6 +320,122 @@ const GeneralTab = ({ form }: GeneralTabProps) => {
             </p>
           </div>
         </CardContent>
+      </Card>
+
+      {/* Product Attributes Card  */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Product Attributes</CardTitle>
+          <CardDescription>
+            Technical details and specifications
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="h-80 overflow-y-auto">
+          {attributes.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-sm text-muted-foreground ">
+                No attributes added yet.
+              </p>
+            </div>
+          )}
+          <div className="space-y-2">
+            {attributes.map((attr) => (
+              <div
+                key={attr.id}
+                className="flex items-center gap-4 rounded-md border p-3"
+              >
+                {editingId === attr.id ? (
+                  <>
+                    <div className="grid flex-1 grid-cols-2 gap-4">
+                      <Input
+                        value={tempAttribute.variantType}
+                        onChange={(e) =>
+                          setTempAttribute({
+                            ...tempAttribute,
+                            variantType: e.target.value,
+                          })
+                        }
+                        placeholder="Attribute name"
+                      />
+                      <Input
+                        value={tempAttribute.value}
+                        onChange={(e) =>
+                          setTempAttribute({
+                            ...tempAttribute,
+                            value: e.target.value,
+                          })
+                        }
+                        placeholder="Attribute value"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={saveEdit}
+                        disabled={
+                          !tempAttribute.variantType || !tempAttribute.value
+                        }
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={cancelEdit}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{attr.variantType}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {attr.value}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => startEditing(attr.id)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeAttribute(attr.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between border-t px-6">
+          <p className="text-sm text-muted-foreground">
+            {attributes.length} attributes
+          </p>
+          <AddAttributesDialog
+            onSave={handleAddAttribute}
+            initialAttributes={attributes}
+            trigger={
+              <Button variant="outline" type="button">
+                Add Attributes
+              </Button>
+            }
+          />
+        </CardFooter>
       </Card>
     </div>
   );

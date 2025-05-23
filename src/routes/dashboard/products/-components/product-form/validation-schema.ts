@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ProductStatusEnum } from "../../-types";
 
 const categorySchema = z.object({
   id: z.string(),
@@ -22,6 +23,12 @@ const imageSchema = z.object({
   cloudinaryId: z.string().optional(),
 });
 
+const attributesSchema = z.object({
+  id: z.string(),
+  variantType: z.string(),
+  value: z.string(),
+});
+
 export const productFormSchema = z.object({
   name: z
     .string()
@@ -31,9 +38,13 @@ export const productFormSchema = z.object({
   price: z.coerce.number().positive({ message: "Price must be positive" }),
   cost: z.coerce.number().positive({ message: "Price must be positive" }),
   images: z.array(imageSchema).max(10, "Maximum 10 images allowed").optional(),
-  parentId: z.string().optional(),
-  category: categorySchema,
-  status: z.string().min(1, { message: "Status is required" }),
+  parentId: z.string().nullable().optional(),
+  category: categorySchema.nullable(),
+  attributes: z.array(attributesSchema),
+  status: z.nativeEnum(ProductStatusEnum, {
+    required_error: "Status is required",
+    invalid_type_error: "Invalid status value",
+  }),
   isFeatured: z.boolean().default(false).optional(),
   stockQuantity: z.coerce
     .number()

@@ -38,7 +38,7 @@ const CategoryProductList = ({ products }: Props) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product, idx) => (
+          {products?.map((product, idx) => (
             <TableRow key={idx}>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">

@@ -16,14 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import type { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "./validation-schema";
 
-type InventoryTabProps = {
-  form: UseFormReturn<ProductFormValues>;
-};
 
-const ProductInventoryTab = ({ form }: InventoryTabProps) => {
+const ProductInventoryTab = () => {
+    const form = useFormContext<ProductFormValues>();
+  
   return (
     <Card>
       <CardHeader>
@@ -122,7 +121,7 @@ const ProductInventoryTab = ({ form }: InventoryTabProps) => {
                 <FormControl>
                   <Input
                     type="number"
-                    className="w-[100px]"
+                    className="w-[200px]"
                     {...field}
                     onChange={(e) =>
                       field.onChange(Number.parseInt(e.target.value) || 0)
