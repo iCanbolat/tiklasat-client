@@ -1,11 +1,11 @@
 import * as React from "react";
 import {
   type ColumnFiltersState,
+  type PaginationState,
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -37,7 +37,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { columns } from "./-components/columns";
-import { ChevronDown, Plus, PlusCircleIcon, SearchIcon, X } from "lucide-react";
+import {
+  ChevronDown,
+  LoaderCircle,
+  PlusCircleIcon,
+  SearchIcon,
+  X,
+} from "lucide-react";
 import {
   getProductsQueryOptions,
   useGetProducts,
@@ -56,15 +62,31 @@ export const Route = createFileRoute("/dashboard/products/")({
 });
 
 function ProductPage() {
-  const { data, isPending, error } = useGetProducts({ page: 1, pageSize: 10 });
-  const { openCreateModal } = useLayoutStore();
-
-  console.log("prods", data?.data);
-
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+
+  const { data, isPending, error } = useGetProducts({
+    page: pagination.pageIndex + 1,
+    pageSize: pagination.pageSize,
+    status:
+      columnFilters.find((filter) => filter.id === "status")?.value ||
+      undefined,
+    categorySlug: columnFilters.find((filter) => filter.id === "category")
+      ?.value as any,
+    // ...Object.fromEntries(
+    //   columnFilters.map((filter) => [filter.id, filter.value])
+    // ),
+  });
+  const { openCreateModal } = useLayoutStore();
+
+  console.log("prods", data?.data);
+
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -72,12 +94,15 @@ function ProductPage() {
   const table = useReactTable({
     data: data?.data || [],
     columns,
+    rowCount: data?.pagination.totalRecords,
+    manualPagination: true,
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -85,37 +110,43 @@ function ProductPage() {
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination,
     },
   });
 
-  if (isPending) return <div>Loading...</div>;
+  // if (isPending) return <div>Loading...</div>;
   if (error) return <div>Error loading products</div>;
   if (!data) return <div>No data available</div>;
 
-  const categoryMap = new Map<
-    string,
-    { id: string; name: string; slug: string }
-  >();
+  const uniqueCategories = React.useMemo(() => {
+    const categoryMap = new Map<
+      string,
+      { id: string; name: string; slug: string }
+    >();
 
-  data.data.forEach((product) => {
-    const categories = Array.isArray(product.category)
-      ? product.category
-      : product.category && typeof product.category === "object"
-        ? [product.category]
-        : [];
+    data?.data?.forEach((product) => {
+      const categories = Array.isArray(product.category)
+        ? product.category
+        : product.category && typeof product.category === "object"
+          ? [product.category]
+          : [];
 
-    categories.forEach((cat) => {
-      if (cat?.id && !categoryMap.has(cat.id)) {
-        categoryMap.set(cat.id, cat);
-      }
+      categories.forEach((cat) => {
+        if (cat?.id && !categoryMap.has(cat.id)) {
+          categoryMap.set(cat.id, cat);
+        }
+      });
     });
-  });
 
-  const uniqueCategories = Array.from(categoryMap.values());
+    return Array.from(categoryMap.values());
+  }, []);
+
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/*  TABLE FILTERS  */}
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative w-64">
             <Input
@@ -170,7 +201,7 @@ function ProductPage() {
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               {uniqueCategories.map((category) => (
-                <SelectItem key={category?.id} value={category?.name || ""}>
+                <SelectItem key={category?.id} value={category?.slug || ""}>
                   {category?.name}
                 </SelectItem>
               ))}
@@ -187,6 +218,8 @@ function ProductPage() {
               if (value === "all") {
                 table.getColumn("status")?.setFilterValue(undefined);
               } else {
+                console.log("value", columnFilters);
+
                 table.getColumn("status")?.setFilterValue([value]);
               }
             }}
@@ -203,6 +236,8 @@ function ProductPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/*  END OF TABLE FILTERS  */}
 
         <div className="flex items-center gap-2">
           {Object.keys(rowSelection).length > 0 && (
@@ -232,58 +267,80 @@ function ProductPage() {
 
       <Card>
         <div className="rounded-md border">
-          <div className="xl:h-[70vh] overflow-hidden">
-            <Table>
-              <TableHeader className="sticky top-0 bg-gray-100 z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="overflow-y-auto">
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
+          <div className="xl:min-h-[70vh] overflow-auto ">
+            {isPending && (
+              <div className="flex items-center justify-center xl:h-[70vh]">
+                <LoaderCircle className="w-10 h-10 animate-spin" />
+              </div>
+            )}
+            {!isPending && (
+              <Table>
+                <TableHeader className="sticky top-0 bg-gray-100 z-10">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableHeader>
+                <TableBody className="overflow-y-auto">
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        No results.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-end space-x-2 p-4">
+          <Select
+            defaultValue={pagination.pageSize.toString()}
+            onValueChange={(value) => table.setPageSize(Number(value))}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <SelectItem key={pageSize} value={pageSize.toString()}>
+                  Show {pageSize}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="flex-1 text-sm text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
             {table.getFilteredRowModel().rows.length} row(s) selected.

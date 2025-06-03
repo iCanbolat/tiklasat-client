@@ -33,7 +33,6 @@ const ProductCreateModal = () => {
       attributes: [],
       allowBackorders: false,
       manageStock: true,
-      category: null,
       parentId: productId,
       description: "",
       status: ProductStatusEnum.ACTIVE,
@@ -46,10 +45,32 @@ const ProductCreateModal = () => {
   });
 
   const onSubmit = async (data: ProductFormValues) => {
-    console.log("Data", data);
-
     try {
-      const res = await createProduct(data);
+      const formData = new FormData();
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === "images") return;
+
+        if (value === null || value === undefined) {
+          return;
+        }
+
+        if (typeof value === "object" && value !== null) {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+      data.images?.forEach((img, index) => {
+        formData.append("files", img.file);
+        formData.append("imageUrls", img.url);
+        formData.append("displayOrders", String(index));
+        if (img.cloudinaryId) {
+          formData.append("cloudinaryIds", img.cloudinaryId);
+        }
+      });
+
+      const res = await createProduct(formData);
       console.log("Product created successfully:", res);
 
       closeCreateModal();

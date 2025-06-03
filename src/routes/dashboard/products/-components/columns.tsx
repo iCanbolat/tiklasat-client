@@ -76,7 +76,7 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
     id: "image",
     header: "Image",
     cell: ({ row }) => (
-      <div className="relative h-10 w-10">
+      <div className="relative h-12 w-8">
         <img
           src={row?.original?.images?.[0]?.url || "/placeholder.svg"}
           alt={row.original.product.name}
@@ -164,7 +164,6 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
     header: "Category",
     cell: ({ row }) => (
       <div className="flex items-center gap-1">
-        {/* <FolderTree className="h-4 w-4 text-muted-foreground" /> */}
         <span>{row.getValue("category")}</span>
       </div>
     ),

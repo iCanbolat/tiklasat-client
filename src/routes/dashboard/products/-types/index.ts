@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import type { ICategory } from "../../categories/-types";
 import qs from "qs";
-import type { ProductFormValues } from "../-components/product-form/validation-schema";
 
 export enum ProductStatusEnum {
   ACTIVE = "ACTIVE",
@@ -15,6 +14,9 @@ export enum ProductStatusEnum {
   ARCHIVED = "ARCHIVED",
   OUT_OF_STOCK = "OUT_OF_STOCK",
 }
+
+export type ProductStatusType = `${ProductStatusEnum}` | {};
+
 type ProductStatusConfig = {
   label: string;
   color: string;
@@ -48,8 +50,6 @@ export const ProductStatusConfigs: Record<
     icon: CircleXIcon,
   },
 };
-
-export type ProductStatusType = `${ProductStatusEnum}`;
 
 export const productStatusOptions = [
   { value: "all", label: "All Statuses", icon: null },
@@ -103,6 +103,7 @@ export type ProductFilterQueryParams = {
   attributes?: { type: string; value: string }[];
   page?: number;
   pageSize?: number;
+  status?: ProductStatusType;
 };
 
 export type ProductServiceResponse = {
@@ -148,7 +149,7 @@ export const productEndpoints = {
       method: "GET" as const,
       response: {} as {
         data: ProductServiceResponse[];
-        pagination: { total: number; page: any };
+        pagination: { totalRecords: number; page: number; pageSize: number };
       },
     };
   },
@@ -175,8 +176,11 @@ export const productEndpoints = {
     method: "GET" as const,
     response: {} as ProductResponseDto,
   }),
-  create: (data: ProductFormValues) => ({
+  create: (data: FormData) => ({
     url: "products",
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
     method: "POST" as const,
     response: {} as ProductResponseDto,
   }),

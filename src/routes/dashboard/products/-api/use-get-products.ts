@@ -1,4 +1,8 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  queryOptions,
+  useQuery,
+} from "@tanstack/react-query";
 import {
   productEndpoints,
   productQueryKeys,
@@ -20,15 +24,18 @@ export const getProductsQueryOptions = (
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     retry: false,
+    placeholderData: keepPreviousData,
   });
 };
 
 export const useGetProducts = (filters: Partial<ProductFilterQueryParams>) => {
-  return useQuery({
-    queryKey: productQueryKeys.list(filters), // e.g. ['products', { categorySlug: 'shoes' }]
-    queryFn: () => queryFn(filters),
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-    retry: false,
-  });
+  return useQuery(getProductsQueryOptions(filters));
+  // return useQuery({
+  //   queryKey: productQueryKeys.list(filters), // e.g. ['products', { categorySlug: 'shoes' }]
+  //   queryFn: () => queryFn(filters),
+  //   staleTime: 1000 * 60 * 5,
+  //   refetchOnWindowFocus: false,
+  //   retry: false,
+  //   placeholderData: keepPreviousData,
+  // });
 };
