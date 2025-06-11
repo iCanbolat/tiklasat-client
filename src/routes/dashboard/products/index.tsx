@@ -48,9 +48,10 @@ import {
   getProductsQueryOptions,
   useGetProducts,
 } from "./-api/use-get-products";
-import { productStatusOptions } from "./-types";
+import { productStatusOptions, type ProductStatusType } from "./-types";
 import { useLayoutStore } from "@/lib/layout-store";
 import ProductCreateModal from "./-components/product-create-modal";
+import { useDeleteProduct } from "./-api/use-delete-product";
 
 export const Route = createFileRoute("/dashboard/products/")({
   component: ProductPage,
@@ -66,10 +67,13 @@ function ProductPage() {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const { data, isPending, error } = useGetProducts({
     page: pagination.pageIndex + 1,
@@ -79,17 +83,17 @@ function ProductPage() {
       undefined,
     categorySlug: columnFilters.find((filter) => filter.id === "category")
       ?.value as any,
-    // ...Object.fromEntries(
-    //   columnFilters.map((filter) => [filter.id, filter.value])
-    // ),
   });
+
+  const {
+    mutateAsync: deleteProducts,
+    isPending: deletePending,
+    error: deleteError,
+  } = useDeleteProduct();
+
   const { openCreateModal } = useLayoutStore();
 
   console.log("prods", data?.data);
-
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data: data?.data || [],
@@ -114,9 +118,13 @@ function ProductPage() {
     },
   });
 
-  // if (isPending) return <div>Loading...</div>;
   if (error) return <div>Error loading products</div>;
   if (!data) return <div>No data available</div>;
+
+  const getSelectedProductIds = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    return selectedRows.map((row) => row.original.product.id);
+  };
 
   const uniqueCategories = React.useMemo(() => {
     const categoryMap = new Map<
@@ -141,6 +149,33 @@ function ProductPage() {
     return Array.from(categoryMap.values());
   }, []);
 
+  const handleDeleteProducts = async (productId?: string) => {
+    const selectedIds = productId ? [productId] : getSelectedProductIds();
+    if (selectedIds.length === 0) return;
+
+    try {
+      await deleteProducts(selectedIds);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleBulkStatusUpdate = async (status: ProductStatusType) => {
+    const selectedIds = getSelectedProductIds();
+    if (selectedIds.length === 0) return;
+
+    try {
+    } catch (error) {
+      console.error("Error updating products:", error);
+
+      // Show error message
+      // toast({
+      //   title: "Error",
+      //   description: "Failed to update products. Please try again.",
+      //   variant: "destructive",
+      // });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -251,7 +286,10 @@ function ProductPage() {
                 <DropdownMenuItem>Mark as Active</DropdownMenuItem>
                 <DropdownMenuItem>Mark as Out of Stock</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
+                <DropdownMenuItem
+                  onClick={() => handleDeleteProducts()}
+                  className="text-destructive"
+                >
                   Delete Selected
                 </DropdownMenuItem>
               </DropdownMenuContent>

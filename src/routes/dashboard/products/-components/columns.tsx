@@ -11,9 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, Edit, MoreHorizontal, Trash } from "lucide-react";
+import {
+  ArrowUpDown,
+  Edit,
+  Loader2,
+  MoreHorizontal,
+  Trash,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "@tanstack/react-router";
+import { useDeleteProduct } from "../-api/use-delete-product";
+import { useState } from "react";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -184,10 +192,23 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
     id: "actions",
     cell: ({ row }) => {
       const data = row.original;
+
       const navigate = useNavigate();
+      const { mutateAsync: deleteProduct, isPending } = useDeleteProduct();
+
+      const [open, setOpen] = useState(false);
+
+      const handleDelete = async () => {
+        try {
+          await deleteProduct([data.product.id]);
+          setOpen(false);
+        } catch (error) {
+          console.error("Deletion failed:", error);
+        }
+      };
 
       return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <MoreHorizontal className="h-4 w-4" />
@@ -204,13 +225,19 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
                 })
               }
             >
-              <Edit className="mr-2 h-4 w-4" />
+              <Edit className="mr-1 h-4 w-4" />
               Edit Product
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              <Trash className="mr-2 h-4 w-4" />
-              Delete Product
+            <DropdownMenuItem onClick={handleDelete}>
+              {isPending ? (
+                <Loader2 className="animate-spin h-4 w-4" />
+              ) : (
+                <>
+                  <Trash className="mr-1 h-4 w-4 text-destructive" />
+                  <h5 className="text-destructive text-sm">Delete Product</h5>
+                </>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

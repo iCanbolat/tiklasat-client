@@ -189,9 +189,9 @@ export const productEndpoints = {
     method: "PATCH" as const,
     response: {} as IProduct,
   }),
-  //   delete: (id: string, deleteProducts: boolean = false) => ({
-  //     url: `products/${id}?deleteProducts=${deleteProducts}`,
-  //     method: "DELETE" as const,
-  //     response: { message: "" } as { message: string },
-  //   }),
+  delete: () => ({
+    url: `products`,
+    method: "DELETE" as const,
+    response: { message: "" } as { message: string },
+  }),
 };
