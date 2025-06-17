@@ -1,4 +1,4 @@
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "./validation-schema";
 import {
   Card,
@@ -40,14 +40,25 @@ const GeneralTab = () => {
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
   const attributes = form.watch("attributes");
+  // const { fields, replace, update } = useFieldArray({
+  //   control: form.control,
+  //   name: "attributes",
+  // });
+
   const [tempAttribute, setTempAttribute] = React.useState({
     variantType: "",
     value: "",
   });
 
   const handleAddAttribute = (newAttributes: IProductAttributes[]) => {
-    const updatedAttributes = [...attributes, ...newAttributes];
-    form.setValue("attributes", updatedAttributes);
+    // const updatedAttributes = [...attributes, ...newAttributes];
+    form.setValue("attributes", [...newAttributes], { shouldDirty: true });
+    console.log("newattrbs", newAttributes);
+
+    // replace(newAttributes);
+    // form.setValue("attributes", newAttributes, { shouldDirty: true });
+
+    // newAttributes.forEach((attr) => append(attr));
   };
 
   const startEditing = (id: string) => {
@@ -59,6 +70,13 @@ const GeneralTab = () => {
         value: attributeToEdit.value,
       });
     }
+    // const attr = attributes.find((f) => f.id === id);
+    // if (!attr) return;
+    // setEditingId(id);
+    // setTempAttribute({
+    //   variantType: attr.variantType,
+    //   value: attr.value,
+    // });
   };
 
   const saveEdit = () => {
@@ -72,6 +90,17 @@ const GeneralTab = () => {
     form.setValue("attributes", updatedAttributes);
     setEditingId(null);
     setTempAttribute({ variantType: "", value: "" });
+    // if (!editingId) return;
+    // const index = fields.findIndex((f) => f.id === editingId);
+    // if (index === -1) return;
+
+    // update(index, {
+    //   ...fields[index],
+    //   ...tempAttribute,
+    // });
+
+    // setEditingId(null);
+    // setTempAttribute({ variantType: "", value: "" });
   };
 
   const cancelEdit = () => {

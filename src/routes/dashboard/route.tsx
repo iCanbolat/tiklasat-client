@@ -1,4 +1,11 @@
-import { Outlet, createFileRoute, useMatches } from "@tanstack/react-router";
+import {
+  Outlet,
+  createFileRoute,
+  useLocation,
+  useMatch,
+  useMatches,
+  useParams,
+} from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { BreadcrumbDemo } from "@/components/breadcrumb";
@@ -27,13 +34,31 @@ export const Route = createFileRoute("/dashboard")({
 
 function DashboardComponent() {
   const matches = useMatches();
-  const { deleteFn, formSubmitFn, isPending } = useLayoutStore();
+  // const match = useMatch({select})
+
+  const { deleteFn, isPending } = useLayoutStore();
 
   const isCategoryOrProductEditRoute = matches.some(
     (match) =>
       match.routeId === "/dashboard/categories/$categoryId" ||
       match.routeId === "/dashboard/products/$productId"
   );
+
+  console.log(matches);
+
+  let formId;
+  switch (matches[matches.length - 2].routeId) {
+    case "/dashboard/products/$productId":
+      formId = "edit-product";
+      break;
+
+    case "/dashboard/categories/$categoryId":
+      formId = "edit-category";
+      break;
+
+    default:
+      break;
+  }
 
   return (
     <SidebarProvider>
@@ -83,8 +108,13 @@ function DashboardComponent() {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <Button onClick={() => formSubmitFn?.()} disabled={isPending}>
-                {false ? (
+              <Button
+                //  onClick={() => formSubmitFn?.()}
+                type="submit"
+                form={formId}
+                disabled={isPending}
+              >
+                {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...

@@ -18,7 +18,11 @@ type ProductFormProps = {
 
 const ProductForm = ({ data }: ProductFormProps) => {
   const [activeTab, setActiveTab] = React.useState("general");
-  const Icon = ProductStatusConfigs[data.product.status].icon!;
+  const productConfigData =
+    ProductStatusConfigs[
+      data.product.status as keyof typeof ProductStatusConfigs
+    ];
+  const Icon = productConfigData.icon!;
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -37,11 +41,11 @@ const ProductForm = ({ data }: ProductFormProps) => {
             SKU: {data.product.sku}
           </Badge>
           <Badge
-            variant={ProductStatusConfigs[data.product.status].color as any}
+            variant={productConfigData.color as any}
             className="flex items-center gap-1"
           >
             {<Icon />}
-            {ProductStatusConfigs[data.product.status].label}
+            {productConfigData.label}
           </Badge>
         </div>
       </div>

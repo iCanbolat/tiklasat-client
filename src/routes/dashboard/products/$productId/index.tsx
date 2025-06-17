@@ -21,6 +21,9 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ProductInventoryTab from "../-components/product-form/inventory-tab";
 import ProductVariantTab from "../-components/product-form/variants-tab";
+import { getDirtyValues, getDirtyValuess } from "@/lib/utils";
+import { useLayoutStore } from "@/lib/layout-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/products/$productId/")({
   component: ProductEditComponent,
@@ -34,6 +37,7 @@ export const Route = createFileRoute("/dashboard/products/$productId/")({
 function ProductEditComponent() {
   const { productId } = Route.useParams();
   const { data, isPending } = useGetProduct(productId);
+  const setIsPending = useLayoutStore((s) => s.setIsPending);
 
   const [activeTab, setActiveTab] = React.useState("general");
 
@@ -42,9 +46,9 @@ function ProductEditComponent() {
     defaultValues: {
       name: data?.product.name,
       slug: data?.product.slug,
-      sku: data?.product.sku ?? "",
+      sku: data?.product.sku ?? undefined,
       price: data?.product.price,
-      cost: data?.product.cost ?? 0,
+      cost: data?.product.cost ?? 1,
       stockQuantity: data?.product.stockQuantity,
       stockUnderThreshold: data?.product.stockUnderThreshold ?? 10,
       attributes: data?.product.attributes ?? [],
@@ -56,9 +60,9 @@ function ProductEditComponent() {
       status: (data?.product.status as ProductStatusEnum) ?? null,
       isFeatured: data?.product.isFeatured ?? false,
       images: data?.product.images ?? [],
-      metaTitle: data?.product.metaTitle,
-      metaDescription: data?.product.metaDescription,
-      metaKeywords: data?.product.metaKeywords,
+      // metaTitle: data?.product.metaTitle,
+      // metaDescription: data?.product.metaDescription,
+      // metaKeywords: data?.product.metaKeywords,
     },
   });
 
@@ -70,15 +74,91 @@ function ProductEditComponent() {
     );
   }
 
-  const Icon = ProductStatusConfigs[data.product.status].icon!;
+  const productConfigData =
+    ProductStatusConfigs[
+      data.product.status as keyof typeof ProductStatusConfigs
+    ];
+  const Icon = productConfigData.icon!;
 
-  console.log("Product Detail page data:", form.getValues());
+  // console.log("Product Detail page data:", form.getValues());
+
+  const onSubmit = async (dataa: ProductFormValues) => {
+    // console.log("zort");
+
+    try {
+      console.log("orjData", form.getValues());
+       const formData = new FormData();
+      const changedData = getDirtyValuess(
+        form.formState.dirtyFields,
+        dataa
+      );
+      const payload: any = { ...changedData };
+
+      const allImages = dataa.images || [];
+      const prevImages = data?.product.images || [];
+
+      // const added = allImages.filter((img) => img.file && !img.cloudinaryId);
+      const removed = prevImages
+        .filter(
+          (prev) =>
+            !allImages.some((cur) => cur.cloudinaryId === prev.cloudinaryId)
+        )
+        .map((i) => i.cloudinaryId);
+
+      // if (added.length) payload.addImages = added;
+      if (removed.length) payload.removeImageIds = removed;
+
+      if (Object.keys(payload).length === 0) {
+        return; // nothing changed
+      }
+
+      console.log("changedDAta", payload);
+
+      Object.entries(changedData).forEach(([key, value]) => {
+        if (key === "images") return;
+
+        if (value === null || value === undefined) {
+          return;
+        }
+
+        if (typeof value === "object" && value !== null) {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+      dataa.images?.forEach((img, index) => {
+        if (img.file) {
+          formData.append("files", img.file);
+        }
+        formData.append("imageUrls", img.url);
+        formData.append("displayOrders", String(index));
+        if (img.cloudinaryId) {
+          formData.append("cloudinaryIds", img.cloudinaryId);
+        }
+      });
+
+      console.log("formdata", formData);
+
+      // const res = await createProduct(formData);
+      // console.log("Product created successfully:", res);
+
+      // closeCreateModal();
+    } catch (error) {
+      console.error("Failed to create product:", error);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 flex-col overflow-auto p-6">
         <Form {...form}>
-          <form>
+          <form
+            id="edit-product"
+            onSubmit={form.handleSubmit(onSubmit, (errors) =>
+              console.log(errors)
+            )}
+          >
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="mb-6 flex items-center justify-between">
                 <TabsList>
@@ -95,13 +175,11 @@ function ProductEditComponent() {
                     SKU: {data.product.sku}
                   </Badge>
                   <Badge
-                    variant={
-                      ProductStatusConfigs[data.product.status].color as any
-                    }
+                    variant={productConfigData.color as any}
                     className="flex items-center gap-1"
                   >
                     {<Icon />}
-                    {ProductStatusConfigs[data.product.status].label}
+                    {productConfigData.label}
                   </Badge>
                 </div>
               </div>

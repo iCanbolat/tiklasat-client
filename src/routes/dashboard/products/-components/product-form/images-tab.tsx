@@ -1,5 +1,5 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { useDrop, useDrag, DndProvider } from "react-dnd";
 import {
   Card,
@@ -23,123 +23,103 @@ type ImageItem = {
 };
 
 const ProductImagesTab = () => {
-  const { setValue, watch } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
   const { productId } = useParams({ strict: false });
   const { mutateAsync: uploadImage, isPending: isUploading } = useUploadImage();
+
+  const { fields, append, replace, remove, move } = useFieldArray({
+    control,
+    name: "images",
+  });
 
   const images: ImageItem[] = watch("images") || [];
 
   const addImageInputRef = React.useRef<HTMLInputElement>(null);
   const changeImageInputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleAddImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const markDirty = (newImages: typeof images) => {
+    replace(newImages);
+    setValue("images", newImages, { shouldDirty: true });
+  };
+
+  const handleAddImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
     const newFiles = Array.from(files).slice(0, 10 - images.length);
-    const newImages = newFiles.map((file, index) => ({
-      url: URL.createObjectURL(file),
-      displayOrder: images.length + index,
+
+    const newImgItems = newFiles.map((file, i) => ({
       file,
+      url: URL.createObjectURL(file),
+      displayOrder: images.length + i,
     }));
 
-    setValue("images", [...images, ...newImages], { shouldValidate: true });
+    markDirty([...images, ...newImgItems]);
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = images
+    const newArr = images
       .filter((_, i) => i !== index)
       .map((img, idx) => ({ ...img, displayOrder: idx }));
-
-    setValue("images", newImages, { shouldValidate: true });
-
-    if (images[index]?.file) {
-      URL.revokeObjectURL(images[index].url);
-    }
+    markDirty(newArr);
   };
 
-  const handleImageChange = async (
+  const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    index: number
+    idx: number
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (images[index]?.file) {
-      URL.revokeObjectURL(images[index].url);
-    }
-
-    const newImages = [...images];
-    newImages[index] = {
-      url: URL.createObjectURL(file),
-      displayOrder: index,
-      file,
-    };
-
-    setValue("images", newImages, { shouldValidate: true });
+    URL.revokeObjectURL(images[idx].url);
+    const newArr = images.map((img, i) =>
+      i === idx
+        ? {
+            file,
+            url: URL.createObjectURL(file),
+            displayOrder: idx,
+          }
+        : img
+    );
+    markDirty(newArr);
   };
 
   const moveImage = (dragIndex: number, hoverIndex: number) => {
     if (dragIndex === hoverIndex) return;
 
-    const newImages = [...images];
-    const [movedImage] = newImages.splice(dragIndex, 1);
-    newImages.splice(hoverIndex, 0, movedImage);
-
-    const reorderedImages = newImages.map((img, idx) => ({
-      ...img,
-      displayOrder: idx,
-    }));
-
-    setValue("images", reorderedImages, { shouldValidate: true });
+    const newArr = [...images];
+    const [moved] = newArr.splice(dragIndex, 1);
+    newArr.splice(hoverIndex, 0, moved);
+    markDirty(newArr.map((img, idx) => ({ ...img, displayOrder: idx })));
+    move(dragIndex, hoverIndex);
   };
 
   const uploadToCloudinary = async () => {
-    if (images.length === 0 || !productId) return;
+    if (!productId) return;
+    const pending = images.filter((img) => img.file && !img.cloudinaryId);
+    if (pending.length === 0) return;
 
-    try {
-      const imagesToUpload = images.filter(
-        (image) => !image.cloudinaryId && image.file
-      );
-
-      const uploadResults = await Promise.all(
-        imagesToUpload.map(async (image) => {
-          const result = await uploadImage({
-            file: image.file!,
-            folder: "products",
-            productId,
-            displayOrder: image.displayOrder,
-          });
-
-          URL.revokeObjectURL(image.url);
-
-          return {
-            originalIndex: images.indexOf(image),
-            data: {
-              url: result.url,
-              cloudinaryId: result.public_id,
-              displayOrder: image.displayOrder,
-            },
-          };
-        })
-      );
-
-      const updatedImages = [...images];
-      uploadResults.forEach(({ originalIndex, data }) => {
-        updatedImages[originalIndex] = {
-          ...updatedImages[originalIndex],
-          url: data.url,
-          cloudinaryId: data.cloudinaryId,
-          file: undefined,
-        };
-      });
-
-      console.log(uploadResults);
-
-      setValue("images", updatedImages, { shouldValidate: true });
-    } catch (error) {
-      console.error("Upload failed:", error);
+    const results = await Promise.all(
+      pending.map(async (img) => ({
+        idx: images.findIndex((i) => i === img),
+        res: await uploadImage({
+          file: img.file!,
+          folder: "products",
+          productId,
+          displayOrder: img.displayOrder,
+        }),
+      }))
+    );
+    const newArr = [...images];
+    for (const r of results) {
+      URL.revokeObjectURL(newArr[r.idx].url);
+      newArr[r.idx] = {
+        ...newArr[r.idx],
+        url: r.res.url,
+        cloudinaryId: r.res.public_id,
+        file: undefined,
+      };
     }
+    markDirty(newArr);
   };
 
   const ImageThumbnail = ({
@@ -242,7 +222,7 @@ const ProductImagesTab = () => {
               <div className="flex items-center justify-between gap-2">
                 <Label>Gallery Images ({images.length}/10)</Label>
                 <div className="flex gap-2">
-                  {images.length > 0 && productId &&(
+                  {images.length > 0 && productId && (
                     <Button
                       type="button"
                       onClick={uploadToCloudinary}

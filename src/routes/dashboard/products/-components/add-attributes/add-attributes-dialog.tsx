@@ -8,6 +8,8 @@ import {
 import { useState } from "react";
 import type { IProductAttributes } from "../../-types";
 import { AddAttributes } from ".";
+import type { ProductFormValues } from "../product-form/validation-schema";
+import { useFieldArray, useFormContext } from "react-hook-form";
 
 interface AddAttributesDialogProps {
   onSave: (attributes: IProductAttributes[]) => void;
@@ -21,7 +23,11 @@ export function AddAttributesDialog({
   initialAttributes,
 }: AddAttributesDialogProps) {
   const [open, setOpen] = useState(false);
-
+  const { control } = useFormContext<ProductFormValues>();
+  const { fields } = useFieldArray({
+    control,
+    name: "attributes",
+  });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>

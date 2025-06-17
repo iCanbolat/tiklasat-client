@@ -17,7 +17,7 @@ const imageSchema = z.object({
     })
     .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
       message: "Only .jpg, .jpeg, and .png formats are supported",
-    }),
+    }).optional(),
   url: z.string().url("Invalid URL format"),
   displayOrder: z.number().min(0),
   cloudinaryId: z.string().optional(),
@@ -34,7 +34,7 @@ export const productFormSchema = z.object({
     .string()
     .min(2, { message: "Product name must be at least 2 characters" }),
   slug: z.string().min(2, { message: "Slug is required" }),
-  sku: z.string().min(2, { message: "SKU is required" }),
+  sku: z.string().optional(),
   price: z.coerce.number().positive({ message: "Price must be positive" }),
   cost: z.coerce.number().positive({ message: "Price must be positive" }),
   images: z.array(imageSchema).max(10, "Maximum 10 images allowed").optional(),
