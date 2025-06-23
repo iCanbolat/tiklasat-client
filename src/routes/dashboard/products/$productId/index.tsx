@@ -11,6 +11,7 @@ import {
 import {
   productFormSchema,
   type ProductFormValues,
+  type ProductImageItem,
 } from "../-components/product-form/validation-schema";
 import { Form } from "@/components/ui/form";
 import React from "react";
@@ -21,9 +22,9 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ProductInventoryTab from "../-components/product-form/inventory-tab";
 import ProductVariantTab from "../-components/product-form/variants-tab";
-import { getDirtyValues, getDirtyValuess } from "@/lib/utils";
+import { getDirtyValuess } from "@/lib/utils";
+import { useEditProduct } from "../-api/use-edit-product";
 import { useLayoutStore } from "@/lib/layout-store";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/products/$productId/")({
   component: ProductEditComponent,
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/dashboard/products/$productId/")({
 function ProductEditComponent() {
   const { productId } = Route.useParams();
   const { data, isPending } = useGetProduct(productId);
+
   const setIsPending = useLayoutStore((s) => s.setIsPending);
 
   const [activeTab, setActiveTab] = React.useState("general");
@@ -66,6 +68,8 @@ function ProductEditComponent() {
     },
   });
 
+  const { mutateAsync: editProduct } = useEditProduct(productId, form);
+
   if (isPending || !data) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -80,24 +84,20 @@ function ProductEditComponent() {
     ];
   const Icon = productConfigData.icon!;
 
-  // console.log("Product Detail page data:", form.getValues());
+  console.log("Product Detail page data:", form.getValues());
 
   const onSubmit = async (dataa: ProductFormValues) => {
-    // console.log("zort");
-
     try {
-      console.log("orjData", form.getValues());
-       const formData = new FormData();
-      const changedData = getDirtyValuess(
-        form.formState.dirtyFields,
-        dataa
-      );
+      // console.log("orjData", form.getValues());
+      setIsPending(true);
+
+      const formData = new FormData();
+      let changedData = getDirtyValuess(form.formState.dirtyFields, dataa);
       const payload: any = { ...changedData };
 
       const allImages = dataa.images || [];
       const prevImages = data?.product.images || [];
 
-      // const added = allImages.filter((img) => img.file && !img.cloudinaryId);
       const removed = prevImages
         .filter(
           (prev) =>
@@ -105,16 +105,18 @@ function ProductEditComponent() {
         )
         .map((i) => i.cloudinaryId);
 
-      // if (added.length) payload.addImages = added;
-      if (removed.length) payload.removeImageIds = removed;
+      removed.forEach((id) => {
+        formData.append("imagesToDelete", String(id));
+      });
 
       if (Object.keys(payload).length === 0) {
-        return; // nothing changed
+        setIsPending(false);
+        return;
       }
 
-      console.log("changedDAta", payload);
+      // console.log("changedDAta", payload);
 
-      Object.entries(changedData).forEach(([key, value]) => {
+      Object.entries(payload).forEach(([key, value]) => {
         if (key === "images") return;
 
         if (value === null || value === undefined) {
@@ -127,25 +129,26 @@ function ProductEditComponent() {
           formData.append(key, String(value));
         }
       });
-      dataa.images?.forEach((img, index) => {
+
+      payload.images?.forEach((img: ProductImageItem) => {
         if (img.file) {
           formData.append("files", img.file);
         }
-        formData.append("imageUrls", img.url);
-        formData.append("displayOrders", String(index));
+        formData.append("imageUrls", String(img.url));
+        formData.append("displayOrders", String(img.displayOrder));
         if (img.cloudinaryId) {
           formData.append("cloudinaryIds", img.cloudinaryId);
         }
       });
 
-      console.log("formdata", formData);
+      formData.append("id", productId);
+      const res = await editProduct(formData);
+      setIsPending(false);
 
-      // const res = await createProduct(formData);
-      // console.log("Product created successfully:", res);
-
-      // closeCreateModal();
+      console.log("Product updated successfully:", res);
     } catch (error) {
-      console.error("Failed to create product:", error);
+      setIsPending(false);
+      console.error("Failed to update product:", error);
     }
   };
 

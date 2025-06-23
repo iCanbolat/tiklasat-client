@@ -72,3 +72,4 @@ export const productFormSchema = z.object({
 
 export type ProductCategoryValues = z.infer<typeof categorySchema>;
 export type ProductFormValues = z.infer<typeof productFormSchema>;
+export type ProductImageItem = NonNullable<ProductFormValues["images"]>[number];

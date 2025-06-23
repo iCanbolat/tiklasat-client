@@ -184,10 +184,13 @@ export const productEndpoints = {
     method: "POST" as const,
     response: {} as ProductResponseDto,
   }),
-  update: (id: string) => ({
-    url: `products/${id}`,
+  update: () => ({
+    url: `products`,
     method: "PATCH" as const,
-    response: {} as IProduct,
+    response: {} as ProductResponseDto,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   }),
   delete: () => ({
     url: `products`,

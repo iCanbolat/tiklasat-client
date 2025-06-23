@@ -61,9 +61,10 @@ const ProductCreateModal = () => {
           formData.append(key, String(value));
         }
       });
+      
       data.images?.forEach((img, index) => {
         formData.append("files", img.file);
-        formData.append("imageUrls", img.url);
+        formData.append("imageUrls", String(img.url));
         formData.append("displayOrders", String(index));
         if (img.cloudinaryId) {
           formData.append("cloudinaryIds", img.cloudinaryId);

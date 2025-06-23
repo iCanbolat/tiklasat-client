@@ -28,32 +28,6 @@ export function generateSKUFromAttributes(
   return skuParts.join("-");
 }
 
-export function getDirtyValues(dirtyFields: any, allValues: any): any {
-  // If it's a boolean dirty flag or an array → send full value
-  if (dirtyFields === true || Array.isArray(dirtyFields)) {
-    return allValues;
-  }
-
-  const result: any = {};
-  for (const key of Object.keys(dirtyFields)) {
-    const df = dirtyFields[key];
-    if (df === true) {
-      result[key] = allValues[key];
-    } else {
-      const nested = getDirtyValues(df, allValues[key]);
-      // Only include if nested is non-null AND, for objects, non-empty
-      if (
-        nested !== null &&
-        (typeof nested !== "object" || Object.keys(nested).length > 0)
-      ) {
-        result[key] = nested;
-      }
-    }
-  }
-
-  // If no fields are dirty, return null
-  return Object.keys(result).length ? result : null;
-}
 export function getDirtyValuess(dirty: any, values: any): any {
   if (dirty === true) return values;
 

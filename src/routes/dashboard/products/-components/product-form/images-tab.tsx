@@ -23,11 +23,11 @@ type ImageItem = {
 };
 
 const ProductImagesTab = () => {
-  const { control, setValue, watch } = useFormContext();
+  const { control, watch } = useFormContext();
   const { productId } = useParams({ strict: false });
   const { mutateAsync: uploadImage, isPending: isUploading } = useUploadImage();
 
-  const { fields, append, replace, remove, move } = useFieldArray({
+  const { replace, move } = useFieldArray({
     control,
     name: "images",
   });
@@ -39,7 +39,7 @@ const ProductImagesTab = () => {
 
   const markDirty = (newImages: typeof images) => {
     replace(newImages);
-    setValue("images", newImages, { shouldDirty: true });
+    // setValue("images", newImages, { shouldDirty: true });
   };
 
   const handleAddImages = (e: React.ChangeEvent<HTMLInputElement>) => {
