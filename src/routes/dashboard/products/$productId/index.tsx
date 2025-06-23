@@ -25,6 +25,7 @@ import ProductVariantTab from "../-components/product-form/variants-tab";
 import { getDirtyValuess } from "@/lib/utils";
 import { useEditProduct } from "../-api/use-edit-product";
 import { useLayoutStore } from "@/lib/layout-store";
+import SeoTab from "../-components/product-form/seo-tab";
 
 export const Route = createFileRoute("/dashboard/products/$productId/")({
   component: ProductEditComponent,
@@ -62,9 +63,9 @@ function ProductEditComponent() {
       status: (data?.product.status as ProductStatusEnum) ?? null,
       isFeatured: data?.product.isFeatured ?? false,
       images: data?.product.images ?? [],
-      // metaTitle: data?.product.metaTitle,
-      // metaDescription: data?.product.metaDescription,
-      // metaKeywords: data?.product.metaKeywords,
+      metaTitle: data?.product.metaTitle,
+      metaDescription: data?.product.metaDescription,
+      metaKeywords: data?.product.metaKeywords,
     },
   });
 
@@ -84,18 +85,18 @@ function ProductEditComponent() {
     ];
   const Icon = productConfigData.icon!;
 
-  console.log("Product Detail page data:", form.getValues());
+  console.log("Product Detail page data:", data);
 
-  const onSubmit = async (dataa: ProductFormValues) => {
+  const onSubmit = async (values: ProductFormValues) => {
     try {
       // console.log("orjData", form.getValues());
       setIsPending(true);
 
       const formData = new FormData();
-      let changedData = getDirtyValuess(form.formState.dirtyFields, dataa);
+      let changedData = getDirtyValuess(form.formState.dirtyFields, values);
       const payload: any = { ...changedData };
 
-      const allImages = dataa.images || [];
+      const allImages = values.images || [];
       const prevImages = data?.product.images || [];
 
       const removed = prevImages
@@ -203,6 +204,10 @@ function ProductEditComponent() {
 
               <TabsContent value="variants" className="space-y-6">
                 <ProductVariantTab />
+              </TabsContent>
+
+              <TabsContent value="seo" className="space-y-6">
+                <SeoTab />
               </TabsContent>
             </Tabs>
           </form>

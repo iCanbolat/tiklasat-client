@@ -14,6 +14,7 @@ import ProductVariantTab from "./product-form/variants-tab";
 import { useParams } from "@tanstack/react-router";
 import { useCreateProduct } from "../-api/use-create-product";
 import { useLayoutStore } from "@/lib/layout-store";
+import SeoTab from "./product-form/seo-tab";
 
 const ProductCreateModal = () => {
   const { productId } = useParams({ strict: false });
@@ -61,9 +62,9 @@ const ProductCreateModal = () => {
           formData.append(key, String(value));
         }
       });
-      
+
       data.images?.forEach((img, index) => {
-        formData.append("files", img.file);
+        if (img.file) formData.append("files", img.file);
         formData.append("imageUrls", String(img.url));
         formData.append("displayOrders", String(index));
         if (img.cloudinaryId) {
@@ -105,7 +106,7 @@ const ProductCreateModal = () => {
     {
       value: "seo",
       label: "SEO",
-      content: <div>Variants form goes here</div>,
+      content: <SeoTab />,
     },
   ];
 

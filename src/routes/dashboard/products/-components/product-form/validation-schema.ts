@@ -17,7 +17,8 @@ const imageSchema = z.object({
     })
     .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
       message: "Only .jpg, .jpeg, and .png formats are supported",
-    }).optional(),
+    })
+    .optional(),
   url: z.string().url("Invalid URL format"),
   displayOrder: z.number().min(0),
   cloudinaryId: z.string().optional(),
@@ -62,12 +63,14 @@ export const productFormSchema = z.object({
   metaTitle: z
     .string()
     .max(60, { message: "Meta title must be less than 60 characters" })
+    .nullable()
     .optional(),
   metaDescription: z
     .string()
     .max(160, { message: "Meta description must be less than 160 characters" })
+    .nullable()
     .optional(),
-  metaKeywords: z.string().optional(),
+  metaKeywords: z.string().nullable().optional(),
 });
 
 export type ProductCategoryValues = z.infer<typeof categorySchema>;
