@@ -14,41 +14,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircleIcon, Trash, Trash2 } from "lucide-react";
-import { useFormContext } from "react-hook-form";
-import type { ProductFormValues } from "./validation-schema";
+import { PlusCircleIcon, Trash2 } from "lucide-react";
 import { useGetProduct } from "../../-api/use-get-product";
 import { useParams } from "@tanstack/react-router";
-import { AddAttributesDialog } from "../add-attributes/add-attributes-dialog";
-import type { IProductAttributes } from "../../-types";
-import { useState } from "react";
-import { generateSKUFromAttributes } from "@/lib/utils";
+
 import ProductCreateModal from "../product-create-modal";
 import { useLayoutStore } from "@/lib/layout-store";
+import { useDeleteProduct } from "../../-api/use-delete-product";
 
 const ProductVariantTab = () => {
-  const { getValues } = useFormContext<ProductFormValues>();
   const { openCreateModal } = useLayoutStore();
   const { productId } = useParams({ strict: false });
   const { data } = useGetProduct(productId ?? "");
-
-  const [variants, setVariants] = useState(data?.variants || []);
-  console.log("variannts", variants);
-
-  // const handleAddVariant = (attributes: IProductAttributes[]) => {
-  //   const newVariant = {
-  //     id: crypto.randomUUID(),
-  //     attributes,
-  //     sku: generateSKUFromAttributes(attributes),
-  //     stockQuantity: 10,
-  //   };
-  //   setVariants([...variants, newVariant]);
-  //   // You might also want to update the form values here
-  // };
-
-  const removeVariant = (id: string) => {
-    setVariants(variants.filter((v) => v.id !== id));
-  };
+  const { mutateAsync: deleteProduct } = useDeleteProduct(productId ?? "");
 
   return (
     <Card>
@@ -59,18 +37,13 @@ const ProductVariantTab = () => {
             Manage product variations like color, size, etc.
           </CardDescription>
         </div>
+
+        <ProductCreateModal />
+
         <Button variant={"outline"} type="button" onClick={openCreateModal}>
           <PlusCircleIcon />
           Add Variant
         </Button>
-        {/* <AddAttributesDialog
-          onSave={handleAddVariant}
-          trigger={
-            <Button variant="outline" type="button">
-              Add Variant
-            </Button>
-          }
-        /> */}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -86,8 +59,8 @@ const ProductVariantTab = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {variants.length > 0 ? (
-                  variants.map((variant) => (
+                {data?.variants && data.variants.length > 0 ? (
+                  data.variants.map((variant) => (
                     <TableRow key={variant.id}>
                       <TableCell className="font-medium uppercase">
                         {variant.attributes
@@ -105,7 +78,7 @@ const ProductVariantTab = () => {
                           variant="ghost"
                           size="sm"
                           className="text-destructive"
-                          onClick={() => removeVariant(variant.id)}
+                          onClick={() => deleteProduct([variant.id])}
                           type="button"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />

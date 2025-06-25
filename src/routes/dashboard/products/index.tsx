@@ -48,7 +48,7 @@ import {
   getProductsQueryOptions,
   useGetProducts,
 } from "./-api/use-get-products";
-import { productStatusOptions, type ProductStatusType } from "./-types";
+import { productStatusOptions } from "./-types/index";
 import { useLayoutStore } from "@/lib/layout-store";
 import ProductCreateModal from "./-components/product-create-modal";
 import { useDeleteProduct } from "./-api/use-delete-product";
@@ -85,11 +85,7 @@ function ProductPage() {
       ?.value as any,
   });
 
-  const {
-    mutateAsync: deleteProducts,
-    isPending: deletePending,
-    error: deleteError,
-  } = useDeleteProduct();
+  const { mutateAsync: deleteProducts } = useDeleteProduct();
 
   const { openCreateModal } = useLayoutStore();
 
@@ -160,22 +156,22 @@ function ProductPage() {
     }
   };
 
-  const handleBulkStatusUpdate = async (status: ProductStatusType) => {
-    const selectedIds = getSelectedProductIds();
-    if (selectedIds.length === 0) return;
+  // const handleBulkStatusUpdate = async (status: ProductStatusType) => {
+  //   const selectedIds = getSelectedProductIds();
+  //   if (selectedIds.length === 0) return;
 
-    try {
-    } catch (error) {
-      console.error("Error updating products:", error);
+  //   try {
+  //   } catch (error) {
+  //     console.error("Error updating products:", error);
 
-      // Show error message
-      // toast({
-      //   title: "Error",
-      //   description: "Failed to update products. Please try again.",
-      //   variant: "destructive",
-      // });
-    }
-  };
+  //     // Show error message
+  //     // toast({
+  //     //   title: "Error",
+  //     //   description: "Failed to update products. Please try again.",
+  //     //   variant: "destructive",
+  //     // });
+  //   }
+  // };
 
   return (
     <div className="space-y-4">

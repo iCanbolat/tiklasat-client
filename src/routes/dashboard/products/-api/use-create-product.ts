@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import {
   productEndpoints,
   productQueryKeys,
+  type ProductResponseDto,
 } from "../-types";
 import { toast } from "sonner";
 import { queryClient } from "@/main";
@@ -22,49 +23,37 @@ const mutationFn = async (data: FormData) => {
 
 export const useCreateProduct = () => {
   const { productId } = useParams({ strict: false });
+
   return useMutation({
     mutationFn,
+    onSuccess: (updatedProduct) => {
+      if (productId)
+        queryClient.setQueryData<ProductResponseDto>(
+          productQueryKeys.detail(productId),
+          (old) => (old ? { ...old, ...updatedProduct } : updatedProduct)
+        );
 
-    // onMutate: async (newProductData) => {
-    //   await queryClient.cancelQueries({ queryKey: productQueryKeys.all });
+      queryClient.setQueryData<ProductResponseDto[]>(
+        productQueryKeys.all,
+        (oldProducts) => {
+          if (!oldProducts) return oldProducts;
+          return oldProducts.map((product) =>
+            product.product.id === productId
+              ? { ...product, ...updatedProduct }
+              : product
+          );
+        }
+      );
 
-    //   const previousCategories = queryClient.getQueryData<ProductResponseDto[]>(
-    //     productQueryKeys.all
-    //   );
-
-    //   const optimisticProduct: ProductResponseDto = {
-    //     product: {
-    //       ...newProductData,
-    //       id: crypto.randomUUID(),
-    //       parentId: productId,
-    //       currency: "",
-    //       isVariant: false,
-    //       isFeatured: newProductData.isFeatured ?? false,
-    //       category: undefined,
-    //       images: newProductData.images
-    //         ? newProductData.images.map((image, idx) => ({
-    //             url: image.url,
-    //             displayOrder: idx,
-    //             ...(image.cloudinaryId ? { cloudinaryId: image.cloudinaryId } : {})
-    //           }))
-    //         : []
-    //     },
-    //     variants: [],
-    //   };
-
-    //   queryClient.setQueryData<ProductResponseDto[]>(
-    //     productQueryKeys.all,
-    //     (old) => [...(old || []), optimisticProduct]
-    //   );
-
-    //   return { previousCategories };
-    // },
-
-    onSuccess: () => {
       toast.success("Product created!");
     },
 
     onSettled: () => {
+      if (productId)
+        queryClient.invalidateQueries({
+          queryKey: productQueryKeys.detail(productId),
+        });
+
       queryClient.invalidateQueries({ queryKey: productQueryKeys.all });
     },
   });

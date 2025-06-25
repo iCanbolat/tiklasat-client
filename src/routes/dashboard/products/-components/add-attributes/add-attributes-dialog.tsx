@@ -23,11 +23,7 @@ export function AddAttributesDialog({
   initialAttributes,
 }: AddAttributesDialogProps) {
   const [open, setOpen] = useState(false);
-  const { control } = useFormContext<ProductFormValues>();
-  const { fields } = useFieldArray({
-    control,
-    name: "attributes",
-  });
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>

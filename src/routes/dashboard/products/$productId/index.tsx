@@ -14,18 +14,16 @@ import {
   type ProductImageItem,
 } from "../-components/product-form/validation-schema";
 import { Form } from "@/components/ui/form";
-import React from "react";
 import { ProductStatusConfigs, ProductStatusEnum } from "../-types";
-import GeneralTab from "../-components/product-form/general-tab";
-import ProductImagesTab from "../-components/product-form/images-tab";
+
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import ProductInventoryTab from "../-components/product-form/inventory-tab";
-import ProductVariantTab from "../-components/product-form/variants-tab";
+
 import { getDirtyValuess } from "@/lib/utils";
 import { useEditProduct } from "../-api/use-edit-product";
 import { useLayoutStore } from "@/lib/layout-store";
-import SeoTab from "../-components/product-form/seo-tab";
+
+import { productDetailTabs } from "../-types/constants";
 
 export const Route = createFileRoute("/dashboard/products/$productId/")({
   component: ProductEditComponent,
@@ -41,8 +39,6 @@ function ProductEditComponent() {
   const { data, isPending } = useGetProduct(productId);
 
   const setIsPending = useLayoutStore((s) => s.setIsPending);
-
-  const [activeTab, setActiveTab] = React.useState("general");
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -163,15 +159,12 @@ function ProductEditComponent() {
               console.log(errors)
             )}
           >
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs defaultValue={productDetailTabs[0].value}>
               <div className="mb-6 flex items-center justify-between">
                 <TabsList>
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="images">Images</TabsTrigger>
-                  <TabsTrigger value="inventory">Inventory</TabsTrigger>
-                  <TabsTrigger value="variants">Variants</TabsTrigger>
-                  <TabsTrigger value="related">Related Products</TabsTrigger>
-                  <TabsTrigger value="seo">SEO</TabsTrigger>
+                  {productDetailTabs.map((tab) => (
+                    <TabsTrigger value={tab.value}>{tab.label}</TabsTrigger>
+                  ))}
                 </TabsList>
 
                 <div className="flex items-center gap-2">
@@ -188,27 +181,17 @@ function ProductEditComponent() {
                 </div>
               </div>
 
-              <TabsContent value="general" className="space-y-6">
-                <GeneralTab />
-              </TabsContent>
-
-              <TabsContent value="images" className="space-y-6">
-                <DndProvider backend={HTML5Backend}>
-                  <ProductImagesTab />
-                </DndProvider>
-              </TabsContent>
-
-              <TabsContent value="inventory" className="space-y-6">
-                <ProductInventoryTab />
-              </TabsContent>
-
-              <TabsContent value="variants" className="space-y-6">
-                <ProductVariantTab />
-              </TabsContent>
-
-              <TabsContent value="seo" className="space-y-6">
-                <SeoTab />
-              </TabsContent>
+              {productDetailTabs.map((tab) => (
+                <TabsContent value={tab.value} className="space-y-6">
+                  {tab.value === "images" ? (
+                    <DndProvider backend={HTML5Backend}>
+                      {tab.content}
+                    </DndProvider>
+                  ) : (
+                    tab.content
+                  )}
+                </TabsContent>
+              ))}
             </Tabs>
           </form>
         </Form>

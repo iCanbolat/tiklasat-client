@@ -11,29 +11,21 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useLayoutStore } from "@/lib/layout-store";
+import type { TabConfig } from "@/routes/dashboard/products/-types/constants";
 
-interface CreateFormModalProps<T extends Record<string, any>> {
-  // isOpen: boolean;
-  // onClose: () => void;
-  onSubmit: (data: T) => Promise<void>;
+interface CreateFormModalProps {
+  onSubmit: (data: any) => Promise<void>;
   form: any;
   isSubmitting: boolean;
   title: string;
   description: string;
   icon: React.ReactNode;
   submitButtonText: React.ReactNode;
-  tabs: {
-    value: string;
-    label: string;
-    content: React.ReactNode;
-    isDisabled?: boolean;
-  }[];
+  tabs: TabConfig[];
   cancelButtonText?: string;
 }
 
-export function CreateFormModal<T extends Record<string, any>>({
-  // isOpen,
-  // onClose,
+export function CreateFormModal({
   onSubmit,
   form,
   isSubmitting,
@@ -43,7 +35,7 @@ export function CreateFormModal<T extends Record<string, any>>({
   submitButtonText,
   tabs,
   cancelButtonText = "Cancel",
-}: CreateFormModalProps<T>) {
+}: CreateFormModalProps) {
   const { closeCreateModal, isCreateModalOpen } = useLayoutStore();
   return (
     <Dialog open={isCreateModalOpen} onOpenChange={closeCreateModal}>
@@ -93,7 +85,11 @@ export function CreateFormModal<T extends Record<string, any>>({
               >
                 {cancelButtonText}
               </Button>
-              <Button type="submit" disabled={isSubmitting} onClick={() => console.log(form.getValues())}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                onClick={() => console.log(form.getValues())}
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
