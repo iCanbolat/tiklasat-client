@@ -104,6 +104,7 @@ export type ProductFilterQueryParams = {
   page?: number;
   pageSize?: number;
   status?: ProductStatusType;
+  search?: string;
 };
 
 export type ProductServiceResponse = {

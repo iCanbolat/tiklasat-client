@@ -52,6 +52,7 @@ import { productStatusOptions } from "./-types/index";
 import { useLayoutStore } from "@/lib/layout-store";
 import ProductCreateModal from "./-components/product-create-modal";
 import { useDeleteProduct } from "./-api/use-delete-product";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export const Route = createFileRoute("/dashboard/products/")({
   component: ProductPage,
@@ -74,6 +75,9 @@ function ProductPage() {
     []
   );
   const [rowSelection, setRowSelection] = React.useState({});
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const { data, isPending, error } = useGetProducts({
     page: pagination.pageIndex + 1,
@@ -83,6 +87,7 @@ function ProductPage() {
       undefined,
     categorySlug: columnFilters.find((filter) => filter.id === "category")
       ?.value as any,
+    search: debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
   });
 
   const { mutateAsync: deleteProducts } = useDeleteProduct();
@@ -96,13 +101,13 @@ function ProductPage() {
     columns,
     rowCount: data?.pagination.totalRecords,
     manualPagination: true,
+    manualFiltering: true,
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    // getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -113,6 +118,12 @@ function ProductPage() {
       pagination,
     },
   });
+
+  React.useEffect(() => {
+    if (debouncedSearchQuery.length >= 2) {
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    }
+  }, [debouncedSearchQuery]);
 
   if (error) return <div>Error loading products</div>;
   if (!data) return <div>No data available</div>;
@@ -183,28 +194,19 @@ function ProductPage() {
             <Input
               placeholder="Filter products..."
               left={<SearchIcon />}
-              value={
-                (table.getColumn("productName")?.getFilterValue() as string) ??
-                ""
-              }
+              value={searchQuery}
               onChange={(event) => {
-                table
-                  .getColumn("productName")
-                  ?.setFilterValue(event.target.value);
+                setSearchQuery(event.target.value);
               }}
               className="pr-8 bg-white"
             />
 
-            {(
-              (table.getColumn("productName")?.getFilterValue() as string) ?? ""
-            ).length > 0 && (
+            {searchQuery.length > 0 && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="absolute right-0.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full p-0"
-                onClick={() =>
-                  table.getColumn("productName")?.setFilterValue("")
-                }
+                onClick={() => setSearchQuery("")}
                 aria-label="Clear filter"
               >
                 <X className="h-4 w-4" />
