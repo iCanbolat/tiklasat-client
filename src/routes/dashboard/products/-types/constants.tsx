@@ -1,6 +1,7 @@
 import GeneralTab from "../-components/product-form/general-tab";
 import ProductImagesTab from "../-components/product-form/images-tab";
 import ProductInventoryTab from "../-components/product-form/inventory-tab";
+import RetaledProductsTab from "../-components/product-form/related-products-tab";
 import SeoTab from "../-components/product-form/seo-tab";
 import ProductVariantTab from "../-components/product-form/variants-tab";
 
@@ -36,12 +37,12 @@ export const productCreateModalTabs = [
     content: <ProductVariantTab />,
     isDisabled: true,
   },
-//   {
-//     value: "related-products",
-//     label: "Related Products",
-//     content: <ProductVariantTab />,
-//     isDisabled: false,
-//   },
+  {
+    value: "related-products",
+    label: "Related Products",
+    content: <RetaledProductsTab />,
+    isDisabled: false,
+  },
   { value: "seo", label: "SEO", content: <SeoTab />, isDisabled: false },
 ] as const;
 

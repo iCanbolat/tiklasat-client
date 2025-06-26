@@ -122,7 +122,7 @@ export type ProductResponseDto = {
     images: IProductImages[];
     category?: ICategory;
   };
-  variants: IProduct[];
+  variants?: IProduct[];
   relatedProducts?: IRelatedProduct[];
 };
 

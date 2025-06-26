@@ -42,6 +42,7 @@ export const productFormSchema = z.object({
   parentId: z.string().nullable().optional(),
   category: categorySchema.nullable(),
   attributes: z.array(attributesSchema),
+  relatedProducts: z.array(z.string()).optional(),
   status: z.nativeEnum(ProductStatusEnum, {
     required_error: "Status is required",
     invalid_type_error: "Invalid status value",
