@@ -177,7 +177,7 @@ export const productEndpoints = {
     method: "GET" as const,
     response: {} as ProductResponseDto,
   }),
-  create: (data: FormData) => ({
+  create: () => ({
     url: "products",
     headers: {
       "Content-Type": "multipart/form-data",

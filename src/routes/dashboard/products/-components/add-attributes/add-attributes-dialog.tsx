@@ -8,8 +8,6 @@ import {
 import { useState } from "react";
 import type { IProductAttributes } from "../../-types";
 import { AddAttributes } from ".";
-import type { ProductFormValues } from "../product-form/validation-schema";
-import { useFieldArray, useFormContext } from "react-hook-form";
 
 interface AddAttributesDialogProps {
   onSave: (attributes: IProductAttributes[]) => void;

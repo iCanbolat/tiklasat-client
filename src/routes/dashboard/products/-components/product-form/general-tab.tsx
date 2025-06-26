@@ -1,4 +1,4 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "./validation-schema";
 import {
   Card,
@@ -30,35 +30,23 @@ import { ProductCategorySelector } from "../category-selector";
 import { productStatusOptions, type IProductAttributes } from "../../-types";
 
 import { Button } from "@/components/ui/button";
-import React, { useEffect } from "react";
+import React from "react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
 import { AddAttributesDialog } from "../add-attributes/add-attributes-dialog";
-import { generateSKUFromAttributes } from "@/lib/utils";
 
 const GeneralTab = () => {
   const form = useFormContext<ProductFormValues>();
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
   const attributes = form.watch("attributes");
-  // const { fields, replace, update } = useFieldArray({
-  //   control: form.control,
-  //   name: "attributes",
-  // });
-
   const [tempAttribute, setTempAttribute] = React.useState({
     variantType: "",
     value: "",
   });
 
   const handleAddAttribute = (newAttributes: IProductAttributes[]) => {
-    // const updatedAttributes = [...attributes, ...newAttributes];
     form.setValue("attributes", [...newAttributes], { shouldDirty: true });
     console.log("newattrbs", newAttributes);
-
-    // replace(newAttributes);
-    // form.setValue("attributes", newAttributes, { shouldDirty: true });
-
-    // newAttributes.forEach((attr) => append(attr));
   };
 
   const startEditing = (id: string) => {
@@ -70,13 +58,6 @@ const GeneralTab = () => {
         value: attributeToEdit.value,
       });
     }
-    // const attr = attributes.find((f) => f.id === id);
-    // if (!attr) return;
-    // setEditingId(id);
-    // setTempAttribute({
-    //   variantType: attr.variantType,
-    //   value: attr.value,
-    // });
   };
 
   const saveEdit = () => {
@@ -90,17 +71,6 @@ const GeneralTab = () => {
     form.setValue("attributes", updatedAttributes);
     setEditingId(null);
     setTempAttribute({ variantType: "", value: "" });
-    // if (!editingId) return;
-    // const index = fields.findIndex((f) => f.id === editingId);
-    // if (index === -1) return;
-
-    // update(index, {
-    //   ...fields[index],
-    //   ...tempAttribute,
-    // });
-
-    // setEditingId(null);
-    // setTempAttribute({ variantType: "", value: "" });
   };
 
   const cancelEdit = () => {
@@ -124,13 +94,6 @@ const GeneralTab = () => {
 
     form.setValue("slug", slug);
   };
-
-  // useEffect(() => {
-  //   if (attributes?.length > 0) {
-  //     const generatedSku = generateSKUFromAttributes(attributes);
-  //     form.setValue("sku", generatedSku, { shouldValidate: true });
-  //   }
-  // }, [attributes, form]);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
