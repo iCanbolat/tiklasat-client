@@ -25,8 +25,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { ICategory } from "../-types";
-import { useCategoryStore } from "@/lib/category-store";
-import { useCategoriesSuspense } from "../-api/use-categories";
+ import { useCategoriesSuspense } from "../-api/use-categories";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useLayoutStore } from "@/lib/layout-store";
 

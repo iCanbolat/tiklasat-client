@@ -16,7 +16,7 @@ import { useCreateCategory } from "../../-api/use-create-category";
 import { CreateFormModal } from "@/components/create-modal";
 
 export function CreateCategoryModal() {
-  const { isCreateModalOpen, closeCreateModal } = useCategoryStore();
+  const { closeCreateModal } = useCategoryStore();
   const { mutate: createCategory, isPending } = useCreateCategory();
 
   const { categoryId } = useParams({ strict: false });

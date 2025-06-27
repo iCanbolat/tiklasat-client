@@ -27,22 +27,27 @@ import { Badge } from "@/components/ui/badge";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   productStatusOptions,
+  type IRelatedProduct,
   type ProductServiceResponse,
 } from "../../-types";
 import { toast } from "sonner";
+import { getStatusBadge } from "./-utils";
 
 type Props = {
-  selectedProducts: ProductServiceResponse[];
-  onProductsChange: (products: ProductServiceResponse[]) => void;
+  selectedProducts: IRelatedProduct[];
+  onProductsChange?: (products: IRelatedProduct[]) => void;
 };
 
-const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
+const AddRelatedProductModal = ({
+  selectedProducts,
+  onProductsChange,
+}: Props) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [tempSelectedProducts, setTempSelectedProducts] = React.useState<
-    ProductServiceResponse[]
+    IRelatedProduct[]
   >([]);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -65,7 +70,14 @@ const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
     return data?.pages.flatMap((page) => page.data) || [];
   }, [data]);
 
-  // Infinite scroll handler
+  console.log("allprods", allProducts);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setTempSelectedProducts([...selectedProducts]);
+    }
+  }, [isOpen, selectedProducts]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     const isNearBottom = scrollHeight - scrollTop <= clientHeight * 1.2;
@@ -104,33 +116,52 @@ const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
 
     if (isSelected) {
       setTempSelectedProducts((prev) =>
-        prev.filter((p) => p.product.id !== data.product.id)
+        prev.filter((p) => p.id !== data.product.id)
       );
     } else {
-      setTempSelectedProducts((prev) => [...prev, data]);
+      let newProduct: IRelatedProduct = {
+        ...data.product,
+        images: data.images || [],
+        category: data.category,
+      };
+      setTempSelectedProducts((prev) => [...prev, newProduct]);
     }
   };
 
+  //FIX
   const uniqueCategories = React.useMemo(() => {
-    return Array.from(
-      new Set(
-        allProducts
-          .map((product) => product.category)
-          .filter(
-            (category): category is NonNullable<typeof category> => !!category
-          )
-      )
-    );
+    const categoryMap = new Map<
+      string,
+      { id: string; name: string; slug: string }
+    >();
+
+    allProducts?.forEach((product) => {
+      console.log("foreach", product);
+
+      const categories = Array.isArray(product.category)
+        ? product.category
+        : product.category && typeof product.category === "object"
+          ? [product.category]
+          : [];
+
+      categories.forEach((cat) => {
+        if (cat?.id && !categoryMap.has(cat.id)) {
+          categoryMap.set(cat.id, cat);
+        }
+      });
+    });
+
+    return Array.from(categoryMap.values());
   }, []);
 
   const handleSave = () => {
-    onProductsChange(tempSelectedProducts);
+    // onProductsChange(tempSelectedProducts);
     setIsOpen(false);
     toast.success("Related products updated");
   };
 
   const isProductSelected = (productId: string) => {
-    return tempSelectedProducts.some((p) => p.product.id === productId);
+    return tempSelectedProducts.some((p) => p.id === productId);
   };
 
   const handleCancel = () => {
@@ -138,16 +169,14 @@ const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
     setIsOpen(false);
   };
 
-  // Clear all selections
   const clearAllSelections = () => {
     setTempSelectedProducts([]);
   };
 
-  // Select all filtered products
   const selectAllFiltered = () => {
-    const newSelections = filteredProducts.filter(
-      (data) => !isProductSelected(data.product.id)
-    );
+    const newSelections: IRelatedProduct[] = filteredProducts
+      .filter((data) => !isProductSelected(data.product.id))
+      .map((data) => data.product);
 
     setTempSelectedProducts((prev) => [...prev, ...newSelections]);
   };
@@ -160,7 +189,7 @@ const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
           Add Related Products
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-4xl">
+      <DialogContent className="max-h-[90vh] max-w-4xl min-w-3xl">
         <DialogHeader>
           <DialogTitle>Select Related Products</DialogTitle>
           <DialogDescription>
@@ -201,7 +230,6 @@ const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
                 {productStatusOptions.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
@@ -283,17 +311,13 @@ const RelatedProductModal = ({ selectedProducts, onProductsChange }: Props) => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {tempSelectedProducts.map((data) => (
-                  <Badge
-                    key={data.product.id}
-                    variant="secondary"
-                    className="gap-1"
-                  >
-                    {data.product.name}
+                  <Badge key={data.id} variant="secondary" className="gap-1">
+                    {data.name}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setTempSelectedProducts((prev) =>
-                          prev.filter((p) => p.product.id !== data.product.id)
+                          prev.filter((p) => p.id !== data.id)
                         );
                       }}
                       className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full"
@@ -336,7 +360,6 @@ const EmptyState = ({ hasFilters }: { hasFilters: boolean }) => (
   </div>
 );
 
-// Extracted Product Card Component for better readability
 const ProductCard = ({
   data,
   isSelected,
@@ -358,15 +381,10 @@ const ProductCard = ({
           <Checkbox checked={isSelected} />
           <div className="relative h-12 w-12 overflow-hidden rounded-md">
             <img
-              src={typeof data.images?.[0] === "string" ? data.images[0] : "/placeholder.svg"}
+              src={data.images?.[0]?.url || "/placeholder.svg"}
               alt={data.product.name}
               className="object-cover"
             />
-            {data.product.isFeatured && (
-              <div className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-primary">
-                <Star className="h-2 w-2 fill-white text-white" />
-              </div>
-            )}
           </div>
         </div>
 
@@ -374,7 +392,11 @@ const ProductCard = ({
           <div className="flex items-center gap-2">
             <h4 className="font-medium">{data.product.name}</h4>
             {data.product.isFeatured && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge
+                variant="secondary"
+                className="text-xs bg-amber-50 text-amber-700 border-amber-200"
+              >
+                <Star className="mr-1 h-3 w-3 fill-amber-700" />
                 Featured
               </Badge>
             )}
@@ -389,19 +411,8 @@ const ProductCard = ({
         </div>
 
         <div className="text-right">
-          <div className="font-semibold">${data.product.price.toFixed(2)}</div>
-          <Badge
-            variant={
-              data.product.status === "Active"
-                ? "default"
-                : data.product.status === "Low Stock"
-                  ? "secondary"
-                  : "destructive"
-            }
-            className="text-xs"
-          >
-            {String(data.product.status)}
-          </Badge>
+          <div className="font-semibold">${data.product.price}</div>
+          {getStatusBadge(data.product.status)}
         </div>
 
         {isSelected && (
@@ -414,4 +425,4 @@ const ProductCard = ({
   </Card>
 );
 
-export default RelatedProductModal;
+export default AddRelatedProductModal;

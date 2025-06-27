@@ -114,7 +114,13 @@ export type ProductServiceResponse = {
   category?: ICategory;
 };
 
-export type IRelatedProduct = Pick<IProduct, "id" | "name" | "slug" | "price">;
+export type IRelatedProduct = Pick<
+  IProduct,
+  "id" | "name" | "stockQuantity" | "price" | "isFeatured" | "status" | "sku"
+> & {
+  images?: IProductImages[];
+  category?: ICategory;
+};
 
 export type ProductResponseDto = {
   product: IProduct & {
