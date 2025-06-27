@@ -87,29 +87,29 @@ const AddRelatedProductModal = ({
     }
   };
 
-  const filteredProducts = React.useMemo(() => {
-    return allProducts.filter((data) => {
-      const matchesSearch = debouncedSearchQuery
-        ? data.product.name
-            .toLowerCase()
-            .includes(debouncedSearchQuery.toLowerCase()) ||
-          (data.product?.sku &&
-            data.product.sku
-              .toLowerCase()
-              .includes(debouncedSearchQuery.toLowerCase()))
-        : true;
+  // const filteredProducts = React.useMemo(() => {
+  //   return allProducts.filter((data) => {
+  //     const matchesSearch = debouncedSearchQuery
+  //       ? data.product.name
+  //           .toLowerCase()
+  //           .includes(debouncedSearchQuery.toLowerCase()) ||
+  //         (data.product?.sku &&
+  //           data.product.sku
+  //             .toLowerCase()
+  //             .includes(debouncedSearchQuery.toLowerCase()))
+  //       : true;
 
-      const matchesCategory =
-        categoryFilter !== "all"
-          ? data.category?.find((c) => c.slug === categoryFilter)
-          : true;
+  //     const matchesCategory =
+  //       categoryFilter !== "all"
+  //         ? data.category?.find((c) => c.slug === categoryFilter)
+  //         : true;
 
-      const matchesStatus =
-        statusFilter !== "all" ? data.product.status === statusFilter : true;
+  //     const matchesStatus =
+  //       statusFilter !== "all" ? data.product.status === statusFilter : true;
 
-      return matchesSearch && matchesCategory && matchesStatus;
-    });
-  }, [allProducts, debouncedSearchQuery, categoryFilter, statusFilter]);
+  //     return matchesSearch && matchesCategory && matchesStatus;
+  //   });
+  // }, [allProducts, debouncedSearchQuery, categoryFilter, statusFilter]);
 
   const toggleProductSelection = (data: ProductServiceResponse) => {
     const isSelected = isProductSelected(data.product.id);
@@ -174,7 +174,7 @@ const AddRelatedProductModal = ({
   };
 
   const selectAllFiltered = () => {
-    const newSelections: IRelatedProduct[] = filteredProducts
+    const newSelections: IRelatedProduct[] = allProducts
       .filter((data) => !isProductSelected(data.product.id))
       .map((data) => data.product);
 
@@ -251,7 +251,7 @@ const AddRelatedProductModal = ({
               )}
             </div>
             <div className="flex items-center gap-2">
-              {filteredProducts.length > 0 && (
+              {allProducts.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={selectAllFiltered}>
                   Select All Filtered
                 </Button>
@@ -274,9 +274,9 @@ const AddRelatedProductModal = ({
                 <div className="flex h-32 items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
-              ) : filteredProducts.length > 0 ? (
+              ) : allProducts.length > 0 ? (
                 <div className="grid gap-3">
-                  {filteredProducts.map((data) => (
+                  {allProducts.map((data) => (
                     <ProductCard
                       key={data.product.id}
                       data={data}
