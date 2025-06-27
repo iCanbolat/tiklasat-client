@@ -23,7 +23,13 @@ import { getDirtyValuess } from "@/lib/utils";
 import { useEditProduct } from "../-api/use-edit-product";
 import { useLayoutStore } from "@/lib/layout-store";
 
-import { productDetailTabs } from "../-types/constants";
+import GeneralTab from "../-components/product-form/general-tab";
+import ProductImagesTab from "../-components/product-form/images-tab";
+import ProductInventoryTab from "../-components/product-form/inventory-tab";
+import ProductVariantTab from "../-components/product-form/variants-tab";
+import SeoTab from "../-components/product-form/seo-tab";
+import RelatedProductsTab from "../-components/product-form/related-products-tab";
+import { productTabDefs } from "../-types/constants";
 
 export const Route = createFileRoute("/dashboard/products/$productId/")({
   component: ProductEditComponent,
@@ -64,6 +70,33 @@ function ProductEditComponent() {
       metaKeywords: data?.product.metaKeywords,
     },
   });
+
+  const productDetailTabs = productTabDefs.map((def) => ({
+    ...def,
+    isDisabled: def.value === "variants" ? false : def.isDisabled,
+    content: (() => {
+      switch (def.value) {
+        case "general":
+          return <GeneralTab />;
+        case "images":
+          return (
+            <DndProvider backend={HTML5Backend}>
+              <ProductImagesTab />
+            </DndProvider>
+          );
+        case "inventory":
+          return <ProductInventoryTab />;
+        case "variants":
+          return <ProductVariantTab />;
+        case "related-products":
+          return <RelatedProductsTab />;
+        case "seo":
+          return <SeoTab />;
+        default:
+          return null;
+      }
+    })(),
+  }));
 
   const { mutateAsync: editProduct } = useEditProduct(productId, form);
 
@@ -163,7 +196,9 @@ function ProductEditComponent() {
               <div className="mb-6 flex items-center justify-between">
                 <TabsList>
                   {productDetailTabs.map((tab) => (
-                    <TabsTrigger value={tab.value}>{tab.label}</TabsTrigger>
+                    <TabsTrigger key={tab.value} value={tab.value}>
+                      {tab.label}
+                    </TabsTrigger>
                   ))}
                 </TabsList>
 
@@ -182,7 +217,11 @@ function ProductEditComponent() {
               </div>
 
               {productDetailTabs.map((tab) => (
-                <TabsContent value={tab.value} className="space-y-6">
+                <TabsContent
+                  key={tab.value}
+                  value={tab.value}
+                  className="space-y-6"
+                >
                   {tab.value === "images" ? (
                     <DndProvider backend={HTML5Backend}>
                       {tab.content}

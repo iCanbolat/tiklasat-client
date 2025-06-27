@@ -10,7 +10,14 @@ import { CreateFormModal } from "@/components/create-modal";
 import { useParams } from "@tanstack/react-router";
 import { useCreateProduct } from "../-api/use-create-product";
 import { useLayoutStore } from "@/lib/layout-store";
-import { productCreateModalTabs } from "../-types/constants";
+import { productTabDefs } from "../-types/constants";
+import ProductInventoryTab from "./product-form/inventory-tab";
+import { DndProvider } from "react-dnd";
+import GeneralTab from "./product-form/general-tab";
+import ProductImagesTab from "./product-form/images-tab";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import RelatedProductsTab from "./product-form/related-products-tab";
+import SeoTab from "./product-form/seo-tab";
 
 const ProductCreateModal = () => {
   const { productId } = useParams({ strict: false });
@@ -45,6 +52,30 @@ const ProductCreateModal = () => {
           metaKeywords: "",
         },
   });
+
+  const productCreateModalTabs = productTabDefs.map((def) => ({
+    ...def,
+    content: (() => {
+      switch (def.value) {
+        case "general":
+          return <GeneralTab />;
+        case "images":
+          return (
+            <DndProvider backend={HTML5Backend}>
+              <ProductImagesTab />
+            </DndProvider>
+          );
+        case "inventory":
+          return <ProductInventoryTab />;
+        case "related-products":
+          return <RelatedProductsTab />;
+        case "seo":
+          return <SeoTab />;
+        default:
+          return null;
+      }
+    })(),
+  }));
 
   console.log("createform", form?.getValues());
 

@@ -24,7 +24,7 @@ import AddRelatedProductModal from "./related-product-selector";
 
 type Props = {};
 
-const RetaledProductsTab = (props: Props) => {
+const RelatedProductsTab = (props: Props) => {
   const form = useFormContext<ProductFormValues>();
   const { productId } = useParams({ from: "/dashboard/products/$productId" });
 
@@ -107,4 +107,4 @@ const RetaledProductsTab = (props: Props) => {
   );
 };
 
-export default RetaledProductsTab;
+export default RelatedProductsTab;

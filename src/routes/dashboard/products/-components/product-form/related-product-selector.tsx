@@ -101,7 +101,7 @@ const AddRelatedProductModal = ({
 
       const matchesCategory =
         categoryFilter !== "all"
-          ? data.category?.slug === categoryFilter
+          ? data.category?.find((c) => c.slug === categoryFilter)
           : true;
 
       const matchesStatus =
@@ -404,7 +404,7 @@ const ProductCard = ({
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>SKU: {data.product.sku}</span>
             <span>•</span>
-            <span>{data.category?.name}</span>
+            <span>{data.category?.[0]?.name}</span>
             <span>•</span>
             <span>Stock: {data.product.stockQuantity}</span>
           </div>

@@ -1,5 +1,8 @@
 import { useFormContext } from "react-hook-form";
-import type { ProductFormValues } from "./validation-schema";
+import type {
+  ProductCategoryValues,
+  ProductFormValues,
+} from "./validation-schema";
 import {
   Card,
   CardContent,
@@ -214,21 +217,31 @@ const GeneralTab = () => {
           <FormField
             control={form.control}
             name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Categories</FormLabel>
-                <FormControl>
-                  <ProductCategorySelector
-                    selectedCategory={field.value}
-                    onCategoryChange={field.onChange}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Select categories to assign this product
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const selected =
+                Array.isArray(field.value) && field.value.length > 0
+                  ? field.value[0]
+                  : null;
+
+              const handleChange = (cat: ProductCategoryValues) => {
+                field.onChange([cat]); 
+              };
+              return (
+                <FormItem>
+                  <FormLabel>Product Categories</FormLabel>
+                  <FormControl>
+                    <ProductCategorySelector
+                      selectedCategory={selected}
+                      onCategoryChange={handleChange}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Select categories to assign this product
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </CardContent>
       </Card>

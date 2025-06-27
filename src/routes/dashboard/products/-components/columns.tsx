@@ -168,7 +168,7 @@ export const columns: ColumnDef<ProductServiceResponse>[] = [
   },
   {
     id: "category",
-    accessorFn: (row) => row?.category?.name,
+    accessorFn: (row) => row?.category?.[0]?.name,
     header: "Category",
     cell: ({ row }) => (
       <div className="flex items-center gap-1">

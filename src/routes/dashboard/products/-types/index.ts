@@ -111,7 +111,7 @@ export type ProductServiceResponse = {
   product: IProduct;
   attributes?: IProductAttributes[];
   images?: IProductImages[];
-  category?: ICategory;
+  category?: ICategory[];
 };
 
 export type IRelatedProduct = Pick<
@@ -119,14 +119,14 @@ export type IRelatedProduct = Pick<
   "id" | "name" | "stockQuantity" | "price" | "isFeatured" | "status" | "sku"
 > & {
   images?: IProductImages[];
-  category?: ICategory;
+  category?: ICategory[];
 };
 
 export type ProductResponseDto = {
   product: IProduct & {
     attributes: IProductAttributes[];
     images: IProductImages[];
-    category?: ICategory;
+    category?: ICategory[];
   };
   variants?: IProduct[];
   relatedProducts?: IRelatedProduct[];

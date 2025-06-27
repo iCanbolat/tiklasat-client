@@ -137,7 +137,7 @@ function findCategoryPath(
 
 type ProductCategorySelectorProps = {
   selectedCategory: ProductCategoryValues | null;
-  onCategoryChange: (categoryName: ProductCategoryValues) => void;
+  onCategoryChange: (category: ProductCategoryValues) => void;
 };
 
 export function ProductCategorySelector({

@@ -40,7 +40,7 @@ export const productFormSchema = z.object({
   cost: z.coerce.number().positive({ message: "Price must be positive" }),
   images: z.array(imageSchema).max(10, "Maximum 10 images allowed").optional(),
   parentId: z.string().nullable().optional(),
-  category: categorySchema.nullable(),
+  category:  z.array(categorySchema).nullable(),
   attributes: z.array(attributesSchema),
   relatedProducts: z.array(z.string()).optional(),
   status: z.nativeEnum(ProductStatusEnum, {
