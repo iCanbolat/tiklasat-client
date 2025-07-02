@@ -43,7 +43,7 @@ export const useInfiniteProducts = (filters: {
     queryFn: async ({ pageParam = 1 }) => {
       const { url, method, response } = productEndpoints.getAll({
         page: pageParam,
-        pageSize: 10,
+        pageSize: 5,
         search: filters.search,
         categorySlug: filters.category !== "all" ? filters.category : undefined,
         status: filters.status !== "all" ? [filters.status] : undefined,

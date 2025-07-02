@@ -1,4 +1,4 @@
- import {
+import {
   Card,
   CardContent,
   CardDescription,
@@ -15,23 +15,57 @@ import {
 } from "@/components/ui/table";
 import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useFormContext } from "react-hook-form";
-import type { ProductFormValues } from "./validation-schema";
-import { useGetProduct } from "../../-api/use-get-product";
+import {
+  useGetProduct,
+  useTempRelatedProducts,
+} from "../../-api/use-get-product";
 import { useParams } from "@tanstack/react-router";
 import AddRelatedProductModal from "./related-product-selector";
-// import { ProductDetailRoute } from "../../$productId";
+import { useEffect } from "react";
+import type { IRelatedProduct } from "../../-types";
+import { useFormContext } from "react-hook-form";
+import type { ProductFormValues } from "./validation-schema";
 
-type Props = {};
-
-const RelatedProductsTab = (props: Props) => {
-  const form = useFormContext<ProductFormValues>();
+const RelatedProductsTab = () => {
   const { productId } = useParams({ from: "/dashboard/products/$productId" });
 
-  const { data: product, isLoading } = useGetProduct(productId);
-  console.log("Relatedp tab", productId, product);
+  const { data, isLoading } = useGetProduct(productId);
+  const [product, setProduct] = useTempRelatedProducts(
+    productId,
+    data?.relatedProducts ?? []
+  );
+  const form = useFormContext<ProductFormValues>();
 
-  if(!product) return null
+  const removeRelatedProduct = (id: string) => {
+    setProduct(product.filter((p) => p.id !== id));
+
+    form.setValue(
+      "relatedProducts",
+      product.map((p) => p.id).filter((productId) => productId !== id)
+    );
+  };
+
+  const addRelatedProduct = (relatedProducts: IRelatedProduct[]) => {
+    setProduct(relatedProducts);
+    console.log(relatedProducts);
+
+    form.setValue(
+      "relatedProducts",
+      relatedProducts
+        .map((i) => i.id)
+        .filter((id) => !data?.relatedProducts?.map((p) => p.id).includes(id)),
+      {
+        shouldDirty: true,
+      }
+    );
+  };
+  useEffect(() => {
+    if (data && !product.length) {
+      setProduct(data.relatedProducts ?? []);
+    }
+  }, [data, product, setProduct]);
+
+  if (!data) return null;
 
   return (
     <Card>
@@ -43,8 +77,8 @@ const RelatedProductsTab = (props: Props) => {
           </CardDescription>
         </div>
         <AddRelatedProductModal
-          selectedProducts={product.relatedProducts || []}
-          // onProductsChange={setRelatedProducts}
+          selectedProducts={product}
+          onProductsChange={addRelatedProduct}
         />
       </CardHeader>
       <CardContent>
@@ -66,23 +100,21 @@ const RelatedProductsTab = (props: Props) => {
                     </TableCell>
                   </TableRow>
                 )}
-                {product?.relatedProducts &&
-                !isLoading &&
-                product?.relatedProducts.length > 0 ? (
-                  product.relatedProducts.map((relatedProduct) => (
+                {product && !isLoading && product?.length > 0 ? (
+                  product.map((relatedProduct) => (
                     <TableRow key={relatedProduct.id}>
                       <TableCell className="font-medium">
                         {relatedProduct.name}
                       </TableCell>
-                      <TableCell>${relatedProduct.price.toFixed(2)}</TableCell>
+                      <TableCell>${relatedProduct.price}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-destructive"
-                          // onClick={() =>
-                          //   removeRelatedProduct(relatedProduct.id)
-                          // }
+                          onClick={() =>
+                            removeRelatedProduct(relatedProduct.id)
+                          }
                           type="button"
                         >
                           <Trash className="mr-2 h-4 w-4" />

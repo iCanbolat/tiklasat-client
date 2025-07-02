@@ -60,6 +60,7 @@ function ProductEditComponent() {
       allowBackorders: data?.product.allowBackorders ?? false,
       manageStock: data?.product.manageStock ?? true,
       category: data?.product.category,
+      relatedProducts: data?.relatedProducts?.map((i) => i.id) ?? [],
       parentId: data?.product.parentId,
       description: data?.product.description,
       status: (data?.product.status as ProductStatusEnum) ?? null,
@@ -118,8 +119,10 @@ function ProductEditComponent() {
 
   const onSubmit = async (values: ProductFormValues) => {
     try {
-      // console.log("orjData", form.getValues());
+      console.log("orjData", form.getValues());
       setIsPending(true);
+
+      console.log("checktest", form.formState.dirtyFields.relatedProducts);
 
       const formData = new FormData();
       let changedData = getDirtyValuess(form.formState.dirtyFields, values);
@@ -144,7 +147,24 @@ function ProductEditComponent() {
         return;
       }
 
-      // console.log("changedDAta", payload);
+      const allCurrent = values.relatedProducts ?? [];
+      const original = data?.relatedProducts?.map((p) => p.id) ?? [];
+
+      const added = allCurrent.filter((id) => !original.includes(id));
+      const removedRelatedProducts = original.filter(
+        (id) => !allCurrent.includes(id)
+      );
+
+      if (added.length) {
+        added.forEach((id) => formData.append("relatedProductsToAdd", id));
+      }
+      if (removedRelatedProducts.length) {
+        removedRelatedProducts.forEach((id) =>
+          formData.append("relatedProductsToRemove", id)
+        );
+      }
+
+      console.log("changedDAta", payload);
 
       Object.entries(payload).forEach(([key, value]) => {
         if (key === "images") return;
@@ -172,10 +192,10 @@ function ProductEditComponent() {
       });
 
       formData.append("id", productId);
-      const res = await editProduct(formData);
+      // const res = await editProduct(formData);
       setIsPending(false);
 
-      console.log("Product updated successfully:", res);
+      // console.log("Product updated successfully:", res);
     } catch (error) {
       setIsPending(false);
       console.error("Failed to update product:", error);

@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Search, X, Plus, Check, Package, Star, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import React from "react";
+import React, { useRef } from "react";
 import { useInfiniteProducts } from "../../-api/use-get-products";
 import { Badge } from "@/components/ui/badge";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -32,10 +32,14 @@ import {
 } from "../../-types";
 import { toast } from "sonner";
 import { getStatusBadge } from "./-utils";
+import { useFormContext } from "react-hook-form";
+import type { ProductFormValues } from "./validation-schema";
+import { useParams } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 
 type Props = {
   selectedProducts: IRelatedProduct[];
-  onProductsChange?: (products: IRelatedProduct[]) => void;
+  onProductsChange: (relatedProducts: IRelatedProduct[]) => void;
 };
 
 const AddRelatedProductModal = ({
@@ -51,65 +55,34 @@ const AddRelatedProductModal = ({
   >([]);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const { productId } = useParams({ from: "/dashboard/products/$productId" });
 
-  // Infinite query
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-  } = useInfiniteProducts({
-    search: debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
-    category: categoryFilter,
-    status: statusFilter,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteProducts({
+      search:
+        debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
+      category: categoryFilter,
+      status: statusFilter,
+    });
+
+  const scrollRef = useRef(null);
+
+  const form = useFormContext<ProductFormValues>();
+  form.watch("relatedProducts");
 
   const allProducts = React.useMemo(() => {
-    return data?.pages.flatMap((page) => page.data) || [];
+    return (
+      data?.pages
+        .flatMap((page) => page.data)
+        .filter((p) => p.product.id !== productId) || []
+    );
   }, [data]);
-
-  console.log("allprods", allProducts);
 
   React.useEffect(() => {
     if (isOpen) {
       setTempSelectedProducts([...selectedProducts]);
     }
   }, [isOpen, selectedProducts]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const isNearBottom = scrollHeight - scrollTop <= clientHeight * 1.2;
-
-    if (isNearBottom && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
-
-  // const filteredProducts = React.useMemo(() => {
-  //   return allProducts.filter((data) => {
-  //     const matchesSearch = debouncedSearchQuery
-  //       ? data.product.name
-  //           .toLowerCase()
-  //           .includes(debouncedSearchQuery.toLowerCase()) ||
-  //         (data.product?.sku &&
-  //           data.product.sku
-  //             .toLowerCase()
-  //             .includes(debouncedSearchQuery.toLowerCase()))
-  //       : true;
-
-  //     const matchesCategory =
-  //       categoryFilter !== "all"
-  //         ? data.category?.find((c) => c.slug === categoryFilter)
-  //         : true;
-
-  //     const matchesStatus =
-  //       statusFilter !== "all" ? data.product.status === statusFilter : true;
-
-  //     return matchesSearch && matchesCategory && matchesStatus;
-  //   });
-  // }, [allProducts, debouncedSearchQuery, categoryFilter, statusFilter]);
 
   const toggleProductSelection = (data: ProductServiceResponse) => {
     const isSelected = isProductSelected(data.product.id);
@@ -128,7 +101,6 @@ const AddRelatedProductModal = ({
     }
   };
 
-  //FIX
   const uniqueCategories = React.useMemo(() => {
     const categoryMap = new Map<
       string,
@@ -136,8 +108,6 @@ const AddRelatedProductModal = ({
     >();
 
     allProducts?.forEach((product) => {
-      console.log("foreach", product);
-
       const categories = Array.isArray(product.category)
         ? product.category
         : product.category && typeof product.category === "object"
@@ -155,7 +125,7 @@ const AddRelatedProductModal = ({
   }, []);
 
   const handleSave = () => {
-    // onProductsChange(tempSelectedProducts);
+    onProductsChange(tempSelectedProducts);
     setIsOpen(false);
     toast.success("Related products updated");
   };
@@ -265,10 +235,7 @@ const AddRelatedProductModal = ({
           </div>
 
           {/* Products Grid */}
-          <ScrollArea
-            className="h-[400px] rounded-md border"
-            onScroll={handleScroll}
-          >
+          <ScrollArea ref={scrollRef} className="h-[400px] rounded-md border">
             <div className="p-4">
               {isLoading ? (
                 <div className="flex h-32 items-center justify-center">
@@ -277,18 +244,31 @@ const AddRelatedProductModal = ({
               ) : allProducts.length > 0 ? (
                 <div className="grid gap-3">
                   {allProducts.map((data) => (
-                    <ProductCard
+                    <motion.div
                       key={data.product.id}
-                      data={data}
-                      isSelected={isProductSelected(data.product.id)}
-                      onSelect={toggleProductSelection}
-                    />
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductCard
+                        key={data.product.id}
+                        data={data}
+                        isSelected={isProductSelected(data.product.id)}
+                        onSelect={toggleProductSelection}
+                      />
+                    </motion.div>
                   ))}
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center p-4">
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                    </div>
-                  )}
+                  <motion.div
+                    onViewportEnter={() => {
+                      if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+                    }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ root: scrollRef, once: true }}
+                    className="flex justify-center p-4"
+                  >
+                    {isFetchingNextPage && <Loader2 className="animate-spin" />}
+                  </motion.div>
                 </div>
               ) : (
                 <EmptyState

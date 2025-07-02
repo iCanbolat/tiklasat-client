@@ -50,6 +50,7 @@ const ProductCreateModal = () => {
           metaTitle: "",
           metaDescription: "",
           metaKeywords: "",
+          relatedProducts: [],
         },
   });
 
