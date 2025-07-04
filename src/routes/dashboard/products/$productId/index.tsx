@@ -19,7 +19,7 @@ import { ProductStatusConfigs, ProductStatusEnum } from "../-types";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
-import { getDirtyValuess } from "@/lib/utils";
+import { getDirtyValues } from "@/lib/utils";
 import { useEditProduct } from "../-api/use-edit-product";
 import { useLayoutStore } from "@/lib/layout-store";
 
@@ -74,7 +74,12 @@ function ProductEditComponent() {
 
   const productDetailTabs = productTabDefs.map((def) => ({
     ...def,
-    isDisabled: def.value === "variants" ? false : def.isDisabled,
+    isDisabled:
+      def.value === "variants"
+        ? data?.product.parentId
+          ? true
+          : false
+        : def.isDisabled,
     content: (() => {
       switch (def.value) {
         case "general":
@@ -116,36 +121,28 @@ function ProductEditComponent() {
   const Icon = productConfigData.icon!;
 
   console.log("Product Detail page data:", data);
+  let dirtyFields = form.formState.dirtyFields;
 
   const onSubmit = async (values: ProductFormValues) => {
     try {
-      console.log("orjData", form.getValues());
       setIsPending(true);
 
-      console.log("checktest", form.formState.dirtyFields.relatedProducts);
-
-      const formData = new FormData();
-      let changedData = getDirtyValuess(form.formState.dirtyFields, values);
+      let changedData = getDirtyValues(dirtyFields, values);
       const payload: any = { ...changedData };
 
       const allImages = values.images || [];
       const prevImages = data?.product.images || [];
 
-      const removed = prevImages
+      const removedImages = prevImages
         .filter(
           (prev) =>
             !allImages.some((cur) => cur.cloudinaryId === prev.cloudinaryId)
         )
         .map((i) => i.cloudinaryId);
 
-      removed.forEach((id) => {
+      removedImages.forEach((id) => {
         formData.append("imagesToDelete", String(id));
       });
-
-      if (Object.keys(payload).length === 0) {
-        setIsPending(false);
-        return;
-      }
 
       const allCurrent = values.relatedProducts ?? [];
       const original = data?.relatedProducts?.map((p) => p.id) ?? [];
@@ -155,25 +152,25 @@ function ProductEditComponent() {
         (id) => !allCurrent.includes(id)
       );
 
-      if (added.length) {
-        added.forEach((id) => formData.append("relatedProductsToAdd", id));
-      }
-      if (removedRelatedProducts.length) {
-        removedRelatedProducts.forEach((id) =>
-          formData.append("relatedProductsToRemove", id)
-        );
+      console.log("chandeData", payload);
+
+      const hasPayload = Object.keys(payload).length > 0;
+      const hasRelatedChanges =
+        added.length > 0 || removedRelatedProducts.length > 0;
+
+      if (!hasPayload && !hasRelatedChanges) {
+        setIsPending(false);
+        return;
       }
 
-      console.log("changedDAta", payload);
+      const formData = new FormData();
 
       Object.entries(payload).forEach(([key, value]) => {
-        if (key === "images") return;
+        if (key === "images" || key === "relatedProducts") return;
 
-        if (value === null || value === undefined) {
-          return;
-        }
+        if (value === null || value === undefined) return;
 
-        if (typeof value === "object" && value !== null) {
+        if (typeof value === "object") {
           formData.append(key, JSON.stringify(value));
         } else {
           formData.append(key, String(value));
@@ -191,11 +188,21 @@ function ProductEditComponent() {
         }
       });
 
+      if (added.length) {
+        added.forEach((id) => formData.append("relatedProductsToAdd", id));
+      }
+      if (removedRelatedProducts.length) {
+        removedRelatedProducts.forEach((id) =>
+          formData.append("relatedProductsToRemove", id)
+        );
+      }
+
       formData.append("id", productId);
-      // const res = await editProduct(formData);
+
+      const res = await editProduct(formData);
       setIsPending(false);
 
-      // console.log("Product updated successfully:", res);
+      console.log("Product updated successfully:", res);
     } catch (error) {
       setIsPending(false);
       console.error("Failed to update product:", error);
@@ -216,7 +223,11 @@ function ProductEditComponent() {
               <div className="mb-6 flex items-center justify-between">
                 <TabsList>
                   {productDetailTabs.map((tab) => (
-                    <TabsTrigger key={tab.value} value={tab.value}>
+                    <TabsTrigger
+                      disabled={tab.isDisabled}
+                      key={tab.value}
+                      value={tab.value}
+                    >
                       {tab.label}
                     </TabsTrigger>
                   ))}

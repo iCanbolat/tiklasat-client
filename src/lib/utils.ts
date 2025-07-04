@@ -28,7 +28,7 @@ export function generateSKUFromAttributes(
   return skuParts.join("-");
 }
 
-export function getDirtyValuess(dirty: any, values: any): any {
+export function getDirtyValues(dirty: any, values: any): any {
   if (dirty === true) return values;
 
   // Handle arrays
@@ -38,7 +38,7 @@ export function getDirtyValuess(dirty: any, values: any): any {
         const value = values[i];
         if (value === undefined) return null;
 
-        const changed = getDirtyValuess(d, value);
+        const changed = getDirtyValues(d, value);
 
         const isChanged =
           changed &&
@@ -57,7 +57,7 @@ export function getDirtyValuess(dirty: any, values: any): any {
   for (const key in dirty) {
     if (values?.[key] === undefined) continue;
 
-    const changed = getDirtyValuess(dirty[key], values[key]);
+    const changed = getDirtyValues(dirty[key], values[key]);
 
     const shouldInclude =
       (Array.isArray(changed) && changed.length > 0) ||

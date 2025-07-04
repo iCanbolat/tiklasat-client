@@ -194,7 +194,7 @@ export const productEndpoints = {
   update: () => ({
     url: `products`,
     method: "PATCH" as const,
-    response: {} as ProductResponseDto,
+    response: {} as ProductResponseDto[],
     headers: {
       "Content-Type": "multipart/form-data",
     },

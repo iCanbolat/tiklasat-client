@@ -55,7 +55,7 @@ const AddRelatedProductModal = ({
   >([]);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
-  const { productId } = useParams({ from: "/dashboard/products/$productId" });
+  const { productId } = useParams({ strict: false });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteProducts({
@@ -154,8 +154,8 @@ const AddRelatedProductModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
-          <Plus className="mr-2 h-4 w-4" />
+        <Button variant="outline">
+          <Plus className="h-4 w-4" />
           Add Related Products
         </Button>
       </DialogTrigger>
@@ -265,7 +265,7 @@ const AddRelatedProductModal = ({
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ root: scrollRef, once: true }}
-                    className="flex justify-center p-4"
+                    className="flex justify-center p-1"
                   >
                     {isFetchingNextPage && <Loader2 className="animate-spin" />}
                   </motion.div>

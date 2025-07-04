@@ -15,23 +15,43 @@ import {
 } from "@/components/ui/table";
 import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  useGetProduct,
-  useTempRelatedProducts,
-} from "../../-api/use-get-product";
+import { useGetProduct } from "../../-api/use-get-product";
 import { useParams } from "@tanstack/react-router";
 import AddRelatedProductModal from "./related-product-selector";
 import { useEffect } from "react";
 import type { IRelatedProduct } from "../../-types";
 import { useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "./validation-schema";
+import { queryClient } from "@/main";
+
+export function useTempRelatedProducts(
+  productId: string,
+  initial: IRelatedProduct[]
+) {
+  const key = ["tempRelated", productId];
+
+  const data = queryClient.getQueryData<IRelatedProduct[]>(key);
+
+  useEffect(() => {
+    if (data === undefined) {
+      queryClient.setQueryData(key, initial);
+    }
+  }, [data, initial, key]);
+
+  const setTemp = (newList: IRelatedProduct[]) =>
+    queryClient.setQueryData(key, newList);
+
+  return [data ?? initial, setTemp] as const;
+}
 
 const RelatedProductsTab = () => {
-  const { productId } = useParams({ from: "/dashboard/products/$productId" });
+  const { productId } = useParams({
+    strict: false,
+  });
 
-  const { data, isLoading } = useGetProduct(productId);
+  const { data, isLoading } = useGetProduct(productId ?? "");
   const [product, setProduct] = useTempRelatedProducts(
-    productId,
+    productId ?? "",
     data?.relatedProducts ?? []
   );
   const form = useFormContext<ProductFormValues>();
@@ -41,19 +61,19 @@ const RelatedProductsTab = () => {
 
     form.setValue(
       "relatedProducts",
-      product.map((p) => p.id).filter((productId) => productId !== id)
+      product.map((p) => p.id).filter((productId) => productId !== id),
+      {
+        shouldDirty: true,
+      }
     );
   };
 
   const addRelatedProduct = (relatedProducts: IRelatedProduct[]) => {
     setProduct(relatedProducts);
-    console.log(relatedProducts);
 
     form.setValue(
       "relatedProducts",
-      relatedProducts
-        .map((i) => i.id)
-        .filter((id) => !data?.relatedProducts?.map((p) => p.id).includes(id)),
+      relatedProducts.map((i) => i.id),
       {
         shouldDirty: true,
       }
@@ -64,8 +84,6 @@ const RelatedProductsTab = () => {
       setProduct(data.relatedProducts ?? []);
     }
   }, [data, product, setProduct]);
-
-  if (!data) return null;
 
   return (
     <Card>

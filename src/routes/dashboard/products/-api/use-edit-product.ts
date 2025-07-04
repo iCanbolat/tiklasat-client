@@ -24,21 +24,27 @@ export const useEditProduct = (
         headers,
       });
 
-      return res.data;
+      console.log("axiosresdata", res.data);
+
+      return res.data[0];
     },
     onSuccess: (updatedProduct) => {
       toast.success("Product updated!");
 
+      console.log("hookpaylo", updatedProduct);
+      
       const current = form.getValues();
+      console.log("hookcateg", current);
       const {
         product: { category, attributes, images },
         ...rest
       } = updatedProduct;
 
+
       const mapped = {
         ...current,
         ...rest,
-        category: category ? { id: category.id, name: category.name } : null,
+        category: category ? category : [],
         attributes:
           attributes?.map((attr: any) => ({
             id: attr.id,
@@ -46,6 +52,7 @@ export const useEditProduct = (
             variantType: attr.variantType,
           })) ?? [],
         images: images ?? [],
+        relatedProducts: rest.relatedProducts?.map((p) => p.id),
       };
       form.reset(mapped);
 
