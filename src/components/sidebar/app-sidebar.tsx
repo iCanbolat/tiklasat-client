@@ -1,4 +1,5 @@
 import {
+  Bell,
   FolderTree,
   Home,
   LayoutDashboard,
@@ -54,11 +55,18 @@ const items = [
   },
   {
     link: linkOptions({
-      to: "/",
-      title: "Settings",
+      to: "/dashboard/notifications",
+      title: "Notifications",
     }),
-    icon: Settings,
+    icon: Bell,
   },
+  // {
+  //   link: linkOptions({
+  //     to: "/",
+  //     title: "Settings",
+  //   }),
+  //   icon: Settings,
+  // },
 ];
 
 export function AppSidebar() {
