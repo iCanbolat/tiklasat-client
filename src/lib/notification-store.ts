@@ -16,7 +16,7 @@ interface NotificationsState {
 
 export const useNotificationsStore = create<NotificationsState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       notifications: [
         {
           id: "1",
