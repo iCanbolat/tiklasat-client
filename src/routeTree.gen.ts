@@ -15,9 +15,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard/route'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as DashboardIndexImport } from './routes/dashboard/index'
 import { Route as DashboardProductsRouteImport } from './routes/dashboard/products/route'
+import { Route as DashboardNotificationsRouteImport } from './routes/dashboard/notifications/route'
 import { Route as DashboardCategoriesRouteImport } from './routes/dashboard/categories/route'
 import { Route as DashboardProductsIndexImport } from './routes/dashboard/products/index'
 import { Route as DashboardOrdersIndexImport } from './routes/dashboard/orders/index'
+import { Route as DashboardNotificationsIndexImport } from './routes/dashboard/notifications/index'
 import { Route as DashboardCategoriesIndexImport } from './routes/dashboard/categories/index'
 import { Route as DashboardCategoriesCategoryIdImport } from './routes/dashboard/categories/$categoryId'
 import { Route as DashboardProductsProductIdRouteImport } from './routes/dashboard/products/$productId/route'
@@ -49,6 +51,13 @@ const DashboardProductsRouteRoute = DashboardProductsRouteImport.update({
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 
+const DashboardNotificationsRouteRoute =
+  DashboardNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+
 const DashboardCategoriesRouteRoute = DashboardCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -66,6 +75,13 @@ const DashboardOrdersIndexRoute = DashboardOrdersIndexImport.update({
   path: '/orders/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+
+const DashboardNotificationsIndexRoute =
+  DashboardNotificationsIndexImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardNotificationsRouteRoute,
+  } as any)
 
 const DashboardCategoriesIndexRoute = DashboardCategoriesIndexImport.update({
   id: '/',
@@ -112,6 +128,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCategoriesRouteImport
       parentRoute: typeof DashboardRouteImport
     }
+    '/dashboard/notifications': {
+      id: '/dashboard/notifications'
+      path: '/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof DashboardNotificationsRouteImport
+      parentRoute: typeof DashboardRouteImport
+    }
     '/dashboard/products': {
       id: '/dashboard/products'
       path: '/products'
@@ -153,6 +176,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/categories/'
       preLoaderRoute: typeof DashboardCategoriesIndexImport
       parentRoute: typeof DashboardCategoriesRouteImport
+    }
+    '/dashboard/notifications/': {
+      id: '/dashboard/notifications/'
+      path: '/'
+      fullPath: '/dashboard/notifications/'
+      preLoaderRoute: typeof DashboardNotificationsIndexImport
+      parentRoute: typeof DashboardNotificationsRouteImport
     }
     '/dashboard/orders/': {
       id: '/dashboard/orders/'
@@ -196,6 +226,20 @@ const DashboardCategoriesRouteRouteWithChildren =
     DashboardCategoriesRouteRouteChildren,
   )
 
+interface DashboardNotificationsRouteRouteChildren {
+  DashboardNotificationsIndexRoute: typeof DashboardNotificationsIndexRoute
+}
+
+const DashboardNotificationsRouteRouteChildren: DashboardNotificationsRouteRouteChildren =
+  {
+    DashboardNotificationsIndexRoute: DashboardNotificationsIndexRoute,
+  }
+
+const DashboardNotificationsRouteRouteWithChildren =
+  DashboardNotificationsRouteRoute._addFileChildren(
+    DashboardNotificationsRouteRouteChildren,
+  )
+
 interface DashboardProductsProductIdRouteRouteChildren {
   DashboardProductsProductIdIndexRoute: typeof DashboardProductsProductIdIndexRoute
 }
@@ -229,6 +273,7 @@ const DashboardProductsRouteRouteWithChildren =
 
 interface DashboardRouteRouteChildren {
   DashboardCategoriesRouteRoute: typeof DashboardCategoriesRouteRouteWithChildren
+  DashboardNotificationsRouteRoute: typeof DashboardNotificationsRouteRouteWithChildren
   DashboardProductsRouteRoute: typeof DashboardProductsRouteRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
@@ -236,6 +281,8 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardCategoriesRouteRoute: DashboardCategoriesRouteRouteWithChildren,
+  DashboardNotificationsRouteRoute:
+    DashboardNotificationsRouteRouteWithChildren,
   DashboardProductsRouteRoute: DashboardProductsRouteRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
@@ -248,12 +295,14 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/categories': typeof DashboardCategoriesRouteRouteWithChildren
+  '/dashboard/notifications': typeof DashboardNotificationsRouteRouteWithChildren
   '/dashboard/products': typeof DashboardProductsRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/login': typeof LoginIndexRoute
   '/dashboard/products/$productId': typeof DashboardProductsProductIdRouteRouteWithChildren
   '/dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/dashboard/categories/': typeof DashboardCategoriesIndexRoute
+  '/dashboard/notifications/': typeof DashboardNotificationsIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/products/': typeof DashboardProductsIndexRoute
   '/dashboard/products/$productId/': typeof DashboardProductsProductIdIndexRoute
@@ -264,6 +313,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginIndexRoute
   '/dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/dashboard/categories': typeof DashboardCategoriesIndexRoute
+  '/dashboard/notifications': typeof DashboardNotificationsIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/products': typeof DashboardProductsIndexRoute
   '/dashboard/products/$productId': typeof DashboardProductsProductIdIndexRoute
@@ -273,12 +323,14 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/categories': typeof DashboardCategoriesRouteRouteWithChildren
+  '/dashboard/notifications': typeof DashboardNotificationsRouteRouteWithChildren
   '/dashboard/products': typeof DashboardProductsRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/login/': typeof LoginIndexRoute
   '/dashboard/products/$productId': typeof DashboardProductsProductIdRouteRouteWithChildren
   '/dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/dashboard/categories/': typeof DashboardCategoriesIndexRoute
+  '/dashboard/notifications/': typeof DashboardNotificationsIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/products/': typeof DashboardProductsIndexRoute
   '/dashboard/products/$productId/': typeof DashboardProductsProductIdIndexRoute
@@ -289,12 +341,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/dashboard'
     | '/dashboard/categories'
+    | '/dashboard/notifications'
     | '/dashboard/products'
     | '/dashboard/'
     | '/login'
     | '/dashboard/products/$productId'
     | '/dashboard/categories/$categoryId'
     | '/dashboard/categories/'
+    | '/dashboard/notifications/'
     | '/dashboard/orders'
     | '/dashboard/products/'
     | '/dashboard/products/$productId/'
@@ -304,6 +358,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/categories/$categoryId'
     | '/dashboard/categories'
+    | '/dashboard/notifications'
     | '/dashboard/orders'
     | '/dashboard/products'
     | '/dashboard/products/$productId'
@@ -311,12 +366,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/dashboard'
     | '/dashboard/categories'
+    | '/dashboard/notifications'
     | '/dashboard/products'
     | '/dashboard/'
     | '/login/'
     | '/dashboard/products/$productId'
     | '/dashboard/categories/$categoryId'
     | '/dashboard/categories/'
+    | '/dashboard/notifications/'
     | '/dashboard/orders/'
     | '/dashboard/products/'
     | '/dashboard/products/$productId/'
@@ -351,6 +408,7 @@ export const routeTree = rootRoute
       "filePath": "dashboard/route.tsx",
       "children": [
         "/dashboard/categories",
+        "/dashboard/notifications",
         "/dashboard/products",
         "/dashboard/",
         "/dashboard/orders/"
@@ -362,6 +420,13 @@ export const routeTree = rootRoute
       "children": [
         "/dashboard/categories/$categoryId",
         "/dashboard/categories/"
+      ]
+    },
+    "/dashboard/notifications": {
+      "filePath": "dashboard/notifications/route.tsx",
+      "parent": "/dashboard",
+      "children": [
+        "/dashboard/notifications/"
       ]
     },
     "/dashboard/products": {
@@ -393,6 +458,10 @@ export const routeTree = rootRoute
     "/dashboard/categories/": {
       "filePath": "dashboard/categories/index.tsx",
       "parent": "/dashboard/categories"
+    },
+    "/dashboard/notifications/": {
+      "filePath": "dashboard/notifications/index.tsx",
+      "parent": "/dashboard/notifications"
     },
     "/dashboard/orders/": {
       "filePath": "dashboard/orders/index.tsx",
