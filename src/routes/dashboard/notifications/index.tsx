@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Bell, CheckCheck } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+
 import { useNotificationsStore } from "@/lib/notification-store";
 
 import { Badge } from "@/components/ui/badge";
@@ -8,10 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-import type { NotificationType } from "./-types";
+import { NotificationType } from "./-types";
 import { NotificationsFilters } from "./-components/notification-filters";
 import { NotificationsHeader } from "./-components/notification-header";
 import { NotificationItem } from "./-components/notification-item";
+import { io } from "socket.io-client";
+import { useInfiniteNotifications } from "./-api/use-get-notifications";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export const Route = createFileRoute("/dashboard/notifications/")({
   component: RouteComponent,
@@ -21,21 +26,48 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   const {
-    notifications,
+    // notifications,
     markAsRead,
     markAllAsRead,
     removeNotification,
     clearAll,
   } = useNotificationsStore();
 
+  // const socket = io("http://localhost:8080");
+  // socket.on("connect", () => {
+  //   console.log("✅ Connected to notification socket");
+  // });
+
+  // socket.on("notification", (data) => {
+  //   console.log("🔔 New notification:", data);
+  // });
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "unread" | "read">("all");
+
   const [selectedTypes, setSelectedTypes] = useState<NotificationType[]>([
-    "order",
-    "inventory",
-    "customer",
-    "system",
-    "payment",
+    NotificationType.CUSTOMER,
+    NotificationType.INVENTORY,
+    NotificationType.ORDER,
+    NotificationType.PAYMENT,
   ]);
+
+  const scrollRef = useRef(null);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteNotifications({
+      search:
+        debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
+      isRead:
+        activeTab === "all" ? undefined : activeTab === "read" ? true : false,
+      types: selectedTypes,
+    });
+
+  const notifications = React.useMemo(() => {
+    return data?.pages.flatMap((page) => page.data) || [];
+  }, [data]);
 
   const handleNotificationClick = (id: string, link?: string) => {
     markAsRead(id);
@@ -50,15 +82,46 @@ function RouteComponent() {
     );
   };
 
-  const filteredNotifications = notifications.filter(
-    (notification) =>
-      selectedTypes.includes(notification.type) &&
-      (notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        notification.message.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const unreadNotifications = notifications.filter((n) => !n.isRead);
 
-  const unreadNotifications = filteredNotifications.filter((n) => !n.read);
-  const readNotifications = filteredNotifications.filter((n) => n.read);
+  const tabs = [
+    {
+      value: "all",
+      emptyStateRender: () => (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <Bell className="mb-2 h-10 w-10 text-muted-foreground" />
+          <h3 className="text-lg font-medium">No notifications found</h3>
+          <p className="text-sm text-muted-foreground">
+            {searchQuery
+              ? "Try adjusting your search or filter criteria"
+              : "You don't have any notifications yet"}
+          </p>
+        </div>
+      ),
+    },
+    {
+      value: "unread",
+      emptyStateRender: () => (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <CheckCheck className="mb-2 h-10 w-10 text-muted-foreground" />
+          <h3 className="text-lg font-medium">No unread notifications</h3>
+          <p className="text-sm text-muted-foreground">You're all caught up!</p>
+        </div>
+      ),
+    },
+    {
+      value: "read",
+      emptyStateRender: () => (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <Bell className="mb-2 h-10 w-10 text-muted-foreground" />
+          <h3 className="text-lg font-medium">No read notifications</h3>
+          <p className="text-sm text-muted-foreground">
+            You haven't read any notifications yet
+          </p>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="container mx-auto py-6">
@@ -77,7 +140,14 @@ function RouteComponent() {
             onToggleType={toggleNotificationType}
           />
 
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs
+            defaultValue="all"
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as "all" | "unread" | "read")
+            }
+            className="w-full"
+          >
             <TabsList className="mb-4 grid w-full grid-cols-3">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="unread" className="flex items-center gap-2">
@@ -91,121 +161,48 @@ function RouteComponent() {
               <TabsTrigger value="read">Read</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all">
-              <Card>
-                <CardContent className="p-0">
-                  {filteredNotifications.length > 0 ? (
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="space-y-0">
-                        {filteredNotifications.map((notification) => (
+            {tabs.map((tab) => (
+              <TabsContent key={tab.value} value={tab.value}>
+                {notifications.length > 0 ? (
+                  <ScrollArea className="h-[400px] w-full" ref={scrollRef}>
+                    <div className="space-y-0">
+                      {notifications.map((notification) => (
+                        <motion.div
+                          key={notification.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
                           <NotificationItem
                             key={notification.id}
-                            id={notification.id}
-                            title={notification.title}
-                            message={notification.message}
-                            type={notification.type}
-                            date={notification.date}
-                            read={notification.read}
-                            link={notification.link}
+                            notification={notification}
                             onMarkAsRead={markAsRead}
                             onRemove={removeNotification}
                             onClick={handleNotificationClick}
                           />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-center">
-                      <Bell className="mb-2 h-10 w-10 text-muted-foreground" />
-                      <h3 className="text-lg font-medium">
-                        No notifications found
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {searchQuery
-                          ? "Try adjusting your search or filter criteria"
-                          : "You don't have any notifications yet"}
-                      </p>
+                        </motion.div>
+                      ))}
+                      <motion.div
+                        onViewportEnter={() => {
+                          if (hasNextPage && !isFetchingNextPage)
+                            fetchNextPage();
+                        }}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ root: scrollRef, once: true }}
+                        className="flex justify-center p-4"
+                      >
+                        {isFetchingNextPage && (
+                          <Loader2 className="animate-spin" />
+                        )}
+                      </motion.div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="unread">
-              <Card>
-                <CardContent className="p-0">
-                  {unreadNotifications.length > 0 ? (
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="space-y-0">
-                        {unreadNotifications.map((notification) => (
-                          <NotificationItem
-                            key={notification.id}
-                            id={notification.id}
-                            title={notification.title}
-                            message={notification.message}
-                            type={notification.type}
-                            date={notification.date}
-                            read={notification.read}
-                            link={notification.link}
-                            onMarkAsRead={markAsRead}
-                            onRemove={removeNotification}
-                            onClick={handleNotificationClick}
-                          />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-center">
-                      <CheckCheck className="mb-2 h-10 w-10 text-muted-foreground" />
-                      <h3 className="text-lg font-medium">
-                        No unread notifications
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        You're all caught up!
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="read">
-              <Card>
-                <CardContent className="p-0">
-                  {readNotifications.length > 0 ? (
-                    <ScrollArea className="h-[400px] w-full">
-                      <div className="space-y-0">
-                        {readNotifications.map((notification) => (
-                          <NotificationItem
-                            key={notification.id}
-                            id={notification.id}
-                            title={notification.title}
-                            message={notification.message}
-                            type={notification.type}
-                            date={notification.date}
-                            read={notification.read}
-                            link={notification.link}
-                            onMarkAsRead={markAsRead}
-                            onRemove={removeNotification}
-                            onClick={handleNotificationClick}
-                          />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-center">
-                      <Bell className="mb-2 h-10 w-10 text-muted-foreground" />
-                      <h3 className="text-lg font-medium">
-                        No read notifications
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        You haven't read any notifications yet
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                  </ScrollArea>
+                ) : (
+                  tab.emptyStateRender()
+                )}
+              </TabsContent>
+            ))}
           </Tabs>
         </CardContent>
       </Card>
