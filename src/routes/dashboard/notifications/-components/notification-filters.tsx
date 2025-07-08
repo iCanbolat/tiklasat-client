@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { NotificationType } from "../-types";
+import { NotificationType } from "../-types";
 
 interface NotificationsFiltersProps {
   searchQuery: string;
@@ -56,32 +56,32 @@ export function NotificationsFilters({
           <DropdownMenuLabel>Notification Types</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem
-            checked={selectedTypes.includes("order")}
-            onCheckedChange={() => onToggleType("order")}
+            checked={selectedTypes.includes(NotificationType.ORDER)}
+            onCheckedChange={() => onToggleType(NotificationType.ORDER)}
           >
             Orders
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
-            checked={selectedTypes.includes("inventory")}
-            onCheckedChange={() => onToggleType("inventory")}
+            checked={selectedTypes.includes(NotificationType.INVENTORY)}
+            onCheckedChange={() => onToggleType(NotificationType.INVENTORY)}
           >
             Inventory
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
-            checked={selectedTypes.includes("customer")}
-            onCheckedChange={() => onToggleType("customer")}
+            checked={selectedTypes.includes(NotificationType.CUSTOMER)}
+            onCheckedChange={() => onToggleType(NotificationType.CUSTOMER)}
           >
             Customers
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
-            checked={selectedTypes.includes("payment")}
-            onCheckedChange={() => onToggleType("payment")}
+            checked={selectedTypes.includes(NotificationType.PAYMENT)}
+            onCheckedChange={() => onToggleType(NotificationType.PAYMENT)}
           >
             Payments
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
-            checked={selectedTypes.includes("system")}
-            onCheckedChange={() => onToggleType("system")}
+            checked={selectedTypes.includes(NotificationType.SYSTEM)}
+            onCheckedChange={() => onToggleType(NotificationType.SYSTEM)}
           >
             System
           </DropdownMenuCheckboxItem>

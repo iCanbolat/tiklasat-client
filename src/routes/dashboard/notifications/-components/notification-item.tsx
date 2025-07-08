@@ -5,16 +5,10 @@ import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { NotificationType } from "../-types";
+import { NotificationType, type INotification } from "../-types";
 
 interface NotificationItemProps {
-  id: string;
-  title: string;
-  message: string;
-  type: NotificationType;
-  date: string;
-  read: boolean;
-  link?: string;
+  notification: INotification;
   onMarkAsRead: (id: string) => void;
   onRemove: (id: string) => void;
   onClick: (id: string, link?: string) => void;
@@ -22,7 +16,7 @@ interface NotificationItemProps {
 
 const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
-    case "order":
+    case NotificationType.ORDER:
       return (
         <Badge
           variant="outline"
@@ -31,7 +25,7 @@ const getNotificationIcon = (type: NotificationType) => {
           Order
         </Badge>
       );
-    case "inventory":
+    case NotificationType.INVENTORY:
       return (
         <Badge
           variant="outline"
@@ -40,7 +34,7 @@ const getNotificationIcon = (type: NotificationType) => {
           Inventory
         </Badge>
       );
-    case "customer":
+    case NotificationType.CUSTOMER:
       return (
         <Badge
           variant="outline"
@@ -49,7 +43,7 @@ const getNotificationIcon = (type: NotificationType) => {
           Customer
         </Badge>
       );
-    case "system":
+    case NotificationType.SYSTEM:
       return (
         <Badge
           variant="outline"
@@ -58,7 +52,7 @@ const getNotificationIcon = (type: NotificationType) => {
           System
         </Badge>
       );
-    case "payment":
+    case NotificationType.PAYMENT:
       return (
         <Badge
           variant="outline"
@@ -73,13 +67,7 @@ const getNotificationIcon = (type: NotificationType) => {
 };
 
 export function NotificationItem({
-  id,
-  title,
-  message,
-  type,
-  date,
-  read,
-  link,
+  notification,
   onMarkAsRead,
   onRemove,
   onClick,
@@ -88,29 +76,31 @@ export function NotificationItem({
     <div
       className={cn(
         "flex cursor-pointer flex-col border-b p-4 transition-colors hover:bg-muted/50 last:border-b-0",
-        !read && "border-l-4 border-l-primary bg-muted/30"
+        !notification.isRead && "border-l-4 border-l-primary bg-muted/30"
       )}
-      onClick={() => onClick(id, link)}
+      onClick={() => onClick(notification.id, notification.link)}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          {getNotificationIcon(type)}
-          <h3 className="font-medium">{title}</h3>
+          {getNotificationIcon(notification.type)}
+          <h3 className="font-medium">{notification.title}</h3>
         </div>
         <div className="flex items-center gap-2">
           <span className="flex items-center text-xs text-muted-foreground">
             <Clock className="mr-1 h-3 w-3" />
-            {formatDistanceToNow(new Date(date), { addSuffix: true })}
+            {formatDistanceToNow(new Date(notification.createdAt), {
+              addSuffix: true,
+            })}
           </span>
           <div className="flex items-center gap-1">
-            {!read && (
+            {!notification.isRead && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onMarkAsRead(id);
+                  onMarkAsRead(notification.id);
                 }}
               >
                 <Check className="h-4 w-4" />
@@ -122,7 +112,7 @@ export function NotificationItem({
               className="h-7 w-7 text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
-                onRemove(id);
+                onRemove(notification.id);
               }}
             >
               <Trash2 className="h-4 w-4" />
@@ -130,7 +120,9 @@ export function NotificationItem({
           </div>
         </div>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">{message}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {notification.message}
+      </p>
     </div>
   );
 }

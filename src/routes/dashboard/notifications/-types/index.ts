@@ -1,17 +1,80 @@
-export type NotificationType =
-  | "order"
-  | "inventory"
-  | "customer"
-  | "system"
-  | "payment";
+import qs from "qs";
 
-export interface Notification {
+export enum NotificationType {
+  ORDER = "ORDER",
+  INVENTORY = "INVENTORY",
+  CUSTOMER = "CUSTOMER",
+  SYSTEM = "SYSTEM",
+  PAYMENT = "PAYMENT",
+}
+// | "ORDER"
+// | "INVENTORY"
+// | "CUSTOMER"
+// | "SYSTEM"
+// | "PAYMENT";
+
+export interface INotification {
   id: string;
   type: NotificationType;
   title: string;
   message: string;
-  read: boolean;
-  date: string;
+  isRead: boolean;
+  createdAt: string;
   link?: string;
   icon?: string;
 }
+
+export type NotificationQueryParams = {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+  isRead?: boolean;
+  types?: NotificationType[];
+};
+
+export const notificationQueryKeys = {
+  all: ["notifications"],
+  list: (filters: Partial<NotificationQueryParams>) => [
+    "notifications",
+    filters,
+  ],
+  pagination: (page: number) => [
+    ...notificationQueryKeys.all,
+    "pagination",
+    page,
+  ],
+  infinite: () => [...notificationQueryKeys.all, "infinite"],
+} as const;
+
+export const notificationEndpoints = {
+  getAll: ({
+    page = 1,
+    pageSize = 10,
+    ...rest
+  }: Partial<NotificationQueryParams>) => {
+    const query = qs.stringify(
+      { page, pageSize, ...rest },
+      { arrayFormat: "brackets" }
+    );
+    return {
+      url: `notifications${query ? `?${query}` : ""}`,
+      method: "GET" as const,
+      response: {} as {
+        data: INotification[];
+        pagination: { totalRecords: number; page: number; pageSize: number };
+      },
+    };
+  },
+
+  update: () => ({
+    url: `products`,
+    method: "PATCH" as const,
+    response: {} as INotification,
+  }),
+
+  delete: () => ({
+    url: `products`,
+    method: "DELETE" as const,
+    response: { message: "" } as { message: string },
+  }),
+};
