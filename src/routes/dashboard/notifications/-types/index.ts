@@ -32,18 +32,22 @@ export type NotificationQueryParams = {
   types?: NotificationType[];
 };
 
+export type MarkNotificationsReadDto = {
+  id?: string;
+  all?: boolean;
+};
+
 export const notificationQueryKeys = {
   all: ["notifications"],
   list: (filters: Partial<NotificationQueryParams>) => [
     "notifications",
     filters,
   ],
-  pagination: (page: number) => [
+  infinite: (filters: NotificationQueryParams) => [
     ...notificationQueryKeys.all,
-    "pagination",
-    page,
+    "infinite",
+    filters,
   ],
-  infinite: () => [...notificationQueryKeys.all, "infinite"],
 } as const;
 
 export const notificationEndpoints = {
@@ -66,8 +70,8 @@ export const notificationEndpoints = {
     };
   },
 
-  update: () => ({
-    url: `products`,
+  update: (id?: string) => ({
+    url: `notifications/${id}`,
     method: "PATCH" as const,
     response: {} as INotification,
   }),

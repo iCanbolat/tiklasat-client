@@ -1,10 +1,10 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { notificationEndpoints, type NotificationQueryParams } from "../-types";
+import { notificationEndpoints, notificationQueryKeys, type NotificationQueryParams } from "../-types";
 import { axiosClient } from "@/lib/axiosInstance";
 
 export const useInfiniteNotifications = (filters: NotificationQueryParams) => {
   return useInfiniteQuery({
-    queryKey: ["infinite-notifications", filters],
+    queryKey: notificationQueryKeys.infinite(filters),
     queryFn: async ({ pageParam = 1 }) => {
       const { url, method, response } = notificationEndpoints.getAll({
         page: pageParam,

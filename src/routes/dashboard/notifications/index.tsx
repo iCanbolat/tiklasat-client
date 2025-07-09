@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { useNotificationsStore } from "@/lib/notification-store";
 
@@ -14,9 +14,9 @@ import { NotificationType } from "./-types";
 import { NotificationsFilters } from "./-components/notification-filters";
 import { NotificationsHeader } from "./-components/notification-header";
 import { NotificationItem } from "./-components/notification-item";
-import { io } from "socket.io-client";
 import { useInfiniteNotifications } from "./-api/use-get-notifications";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useEditNotification } from "./-api/use-edit-notification";
 
 export const Route = createFileRoute("/dashboard/notifications/")({
   component: RouteComponent,
@@ -25,13 +25,7 @@ export const Route = createFileRoute("/dashboard/notifications/")({
 function RouteComponent() {
   const navigate = useNavigate();
 
-  const {
-    // notifications,
-    markAsRead,
-    markAllAsRead,
-    removeNotification,
-    clearAll,
-  } = useNotificationsStore();
+  const { removeNotification, clearAll } = useNotificationsStore();
 
   // const socket = io("http://localhost:8080");
   // socket.on("connect", () => {
@@ -56,7 +50,7 @@ function RouteComponent() {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteNotifications({
       search:
         debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
@@ -65,12 +59,19 @@ function RouteComponent() {
       types: selectedTypes,
     });
 
+  const { mutateAsync: markAsRead } = useEditNotification({
+    search: debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
+    isRead:
+      activeTab === "all" ? undefined : activeTab === "read" ? true : false,
+    types: selectedTypes,
+  });
+
   const notifications = React.useMemo(() => {
     return data?.pages.flatMap((page) => page.data) || [];
   }, [data]);
 
   const handleNotificationClick = (id: string, link?: string) => {
-    markAsRead(id);
+    markAsRead({ id });
     if (link) {
       navigate({ to: link });
     }
@@ -128,7 +129,7 @@ function RouteComponent() {
       <Card>
         <CardHeader>
           <NotificationsHeader
-            onMarkAllAsRead={markAllAsRead}
+            onMarkAllAsRead={markAsRead}
             onClearAll={clearAll}
           />
         </CardHeader>

@@ -5,11 +5,15 @@ import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { NotificationType, type INotification } from "../-types";
+import {
+  NotificationType,
+  type INotification,
+  type MarkNotificationsReadDto,
+} from "../-types";
 
 interface NotificationItemProps {
   notification: INotification;
-  onMarkAsRead: (id: string) => void;
+  onMarkAsRead: (data: MarkNotificationsReadDto) => void;
   onRemove: (id: string) => void;
   onClick: (id: string, link?: string) => void;
 }
@@ -100,7 +104,7 @@ export function NotificationItem({
                 className="h-7 w-7"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onMarkAsRead(notification.id);
+                  onMarkAsRead({ id: notification.id });
                 }}
               >
                 <Check className="h-4 w-4" />
