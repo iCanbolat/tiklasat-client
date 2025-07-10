@@ -24,7 +24,7 @@ import { NavUser } from "./nav-user";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { Badge } from "../ui/badge";
 import { useLocation } from "@tanstack/react-router";
-import { useNotificationsStore } from "@/lib/notification-store";
+import { useInfiniteNotifications } from "@/routes/dashboard/notifications/-api/use-get-notifications";
 
 const items = [
   {
@@ -73,7 +73,12 @@ const items = [
 
 export function AppSidebar() {
   const pathname = useLocation({ select: (loc) => loc.pathname });
-  const { unreadCount } = useNotificationsStore();
+  const { data } = useInfiniteNotifications({
+    pageSize: 10,
+    isRead: false,
+  });
+
+  const notifications = data?.pages[0].data ?? [];
 
   return (
     <Sidebar collapsible="icon">
@@ -89,8 +94,8 @@ export function AppSidebar() {
                   pathname === item.link.to ||
                   (item.link.to !== "/dashboard" &&
                     pathname?.startsWith(item.link.to));
-                const showBadge =
-                  item.link.title === "Notifications" && unreadCount > 0;
+
+                const isNotifications = item.link.title === "Notifications";
 
                 return (
                   <SidebarMenuItem key={item.link.title}>
@@ -98,21 +103,26 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                       tooltip={item.link.title}
+                      className="h-9"
                     >
                       <Link
                         to={item.link.to}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 relative"
                       >
-                        <item.icon className="h-5 w-5" />
+                        <div className="relative">
+                          <item.icon className="h-5 w-5" />
+                          {isNotifications && notifications.length > 0 && (
+                            <Badge
+                              variant="destructive"
+                              className="absolute -right-2 -top-2 flex h-[18px] w-[18px] items-center justify-center rounded-full p-0 text-[10.5px] font-bold min-w-4"
+                            >
+                              {notifications.length > 9
+                                ? "9+"
+                                : notifications.length}
+                            </Badge>
+                          )}
+                        </div>
                         <span>{item.link.title}</span>
-                        {showBadge && (
-                          <Badge
-                            variant="destructive"
-                            className="ml-auto flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
-                          >
-                            {unreadCount > 9 ? "9+" : unreadCount}
-                          </Badge>
-                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -1,11 +1,14 @@
 import { CheckCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { INotification, MarkNotificationsReadDto } from "../-types";
+import type {
+  DeleteNotificationDto,
+  MarkNotificationsReadDto,
+} from "../-types";
 
 interface NotificationsHeaderProps {
   onMarkAllAsRead: (data: MarkNotificationsReadDto) => void;
-  onClearAll: () => void;
+  onClearAll: (payload: DeleteNotificationDto) => void;
 }
 
 export function NotificationsHeader({
@@ -34,7 +37,11 @@ export function NotificationsHeader({
             <CheckCheck className="mr-2 h-4 w-4" />
             Mark all as read
           </Button>
-          <Button variant="outline" size="sm" onClick={onClearAll}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onClearAll({ all: true })}
+          >
             <Trash2 className="mr-2 h-4 w-4" />
             Clear all
           </Button>

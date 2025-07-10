@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   NotificationType,
+  type DeleteNotificationDto,
   type INotification,
   type MarkNotificationsReadDto,
 } from "../-types";
@@ -14,7 +15,7 @@ import {
 interface NotificationItemProps {
   notification: INotification;
   onMarkAsRead: (data: MarkNotificationsReadDto) => void;
-  onRemove: (id: string) => void;
+  onRemove: (payload: DeleteNotificationDto) => void;
   onClick: (id: string, link?: string) => void;
 }
 
@@ -116,7 +117,7 @@ export function NotificationItem({
               className="h-7 w-7 text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
-                onRemove(notification.id);
+                onRemove({ id: notification.id });
               }}
             >
               <Trash2 className="h-4 w-4" />

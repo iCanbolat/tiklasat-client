@@ -8,7 +8,7 @@ export const useInfiniteNotifications = (filters: NotificationQueryParams) => {
     queryFn: async ({ pageParam = 1 }) => {
       const { url, method, response } = notificationEndpoints.getAll({
         page: pageParam,
-        pageSize: 3,
+        pageSize: filters.pageSize ?? 8,
         search: filters.search,
         isRead: filters.isRead,
         types: filters.types,

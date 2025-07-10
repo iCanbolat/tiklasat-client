@@ -7,11 +7,6 @@ export enum NotificationType {
   SYSTEM = "SYSTEM",
   PAYMENT = "PAYMENT",
 }
-// | "ORDER"
-// | "INVENTORY"
-// | "CUSTOMER"
-// | "SYSTEM"
-// | "PAYMENT";
 
 export interface INotification {
   id: string;
@@ -36,6 +31,8 @@ export type MarkNotificationsReadDto = {
   id?: string;
   all?: boolean;
 };
+
+export type DeleteNotificationDto = MarkNotificationsReadDto;
 
 export const notificationQueryKeys = {
   all: ["notifications"],
@@ -76,9 +73,9 @@ export const notificationEndpoints = {
     response: {} as INotification,
   }),
 
-  delete: () => ({
-    url: `products`,
+  delete: (id?: string) => ({
+    url: `notifications/${id}`,
     method: "DELETE" as const,
-    response: { message: "" } as { message: string },
+    response: { message: "" },
   }),
 };
