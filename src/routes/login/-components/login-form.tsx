@@ -84,7 +84,7 @@ const LoginForm = () => {
         </div>
         <div className="flex flex-col text-center space-y-2">
           <div>
-            <Link to="/" className="hover:underline text-sm">
+            <Link to="" className="hover:underline text-sm">
               Forgot your password?
             </Link>
           </div>

@@ -10,29 +10,23 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { useOrdersStore } from "@/lib/order-store";
+import type { OrderAnalytics, OrderCountsByStatus } from "../-types";
 
-export function OrdersStats() {
-  const { orders } = useOrdersStore();
+interface OrdersStatsProps {
+  analytics?: OrderAnalytics;
+  orderCounts?: OrderCountsByStatus;
+}
 
-  const totalOrders = orders.length;
-  const totalRevenue = orders
-    .filter((order) => order.paymentStatus === "paid")
-    .reduce((sum, order) => sum + order.total, 0);
-  const pendingOrders = orders.filter(
-    (order) => order.status === "pending"
-  ).length;
-  const deliveredOrders = orders.filter(
-    (order) => order.status === "delivered"
-  ).length;
-  const cancelledOrders = orders.filter(
-    (order) => order.status === "cancelled"
-  ).length;
+export function OrdersStats({ analytics, orderCounts }: OrdersStatsProps) {
+  const totalOrders = analytics?.totalOrders || 0;
+  const totalRevenue = analytics?.totalRevenue || 0;
+  const completionRate = Math.round(analytics?.completionRate || 0);
+  const cancellationRate = Math.round(analytics?.cancellationRate || 0);
 
-  const completionRate =
-    totalOrders > 0 ? Math.round((deliveredOrders / totalOrders) * 100) : 0;
-  const cancellationRate =
-    totalOrders > 0 ? Math.round((cancelledOrders / totalOrders) * 100) : 0;
+  const pendingOrders = orderCounts?.PENDING || 0;
+  const deliveredOrders = orderCounts?.DELIVERED || 0;
+  const cancelledOrders = orderCounts?.CANCELLED || 0;
+
   const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   const stats = [

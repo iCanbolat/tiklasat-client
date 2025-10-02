@@ -10,7 +10,7 @@ import { queryClient } from "@/main";
 import { useParams } from "@tanstack/react-router";
 
 const mutationFn = async (data: FormData) => {
-  const { method, response, url, headers } = productEndpoints.create(data);
+  const { method, response, url, headers } = productEndpoints.create();
   const res = await axiosClient.request<typeof response>({
     method,
     url,
